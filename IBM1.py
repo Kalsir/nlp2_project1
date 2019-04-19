@@ -42,9 +42,9 @@ class IBM1():
 			total_log_likelihood = 0
 			
 			# Calculate expected counts (Expectation step) and log-likelihood
-			for i in range(len(training_corpus)):
+			for t in range(len(training_corpus)):
 				# Expand sentence pair
-				english_sentence, foreign_sentence = training_corpus[i]
+				english_sentence, foreign_sentence = training_corpus[t]
 
 				# Add null token
 				foreign_sentence = [None] + foreign_sentence		
@@ -66,8 +66,8 @@ class IBM1():
 						expected_total[f] += normalized_count
 
 				# Print progress through training data
-				if (i+1)%10000 == 0:
-					print((i+1), "out of", len(training_corpus), "done")
+				if (t+1)%10000 == 0:
+					print((t+1), "out of", len(training_corpus), "done")
 
 			# Update translation probabilities (Maximization step)
 			for e in expected_count.keys():
@@ -102,9 +102,9 @@ class IBM1():
 			for f_idx, f in enumerate(foreign_sentence):
 				prob = self.translation_probabilities[e][f] 
 				if prob > best_prob:  # prefer newer word in case of tie
-					best_align = f_idx
+					best_align = f_idx + 1 
 					best_prob = prob
-			alignment.add((e_idx, best_align))
+			alignment.add((e_idx+1, best_align))
 
 		return alignment
 
