@@ -401,7 +401,7 @@ def main():
 	
 	# Train the model
 	iterations = 15
-	log_likelihoods, aer_scores = ibm1_model.train(training_corpus, iterations, validation_corpus, validation_gold)
+	log_likelihoods, aer_scores = ibm1_model.train(training_corpus, iterations, test_corpus, test_gold)
 	#aer_scores = [initial_aer] + aer_scores
 
 	# Print log-likelihood after training
