@@ -362,6 +362,19 @@ class IBM2Jump(IBM1):
 
         return alignment
 
+def get_flags():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model', type = str, default = 'ibm1', help='model, ibm1 (default), ibm2')
+    flags, unparsed = parser.parse_known_args()
+    return flags
+
+def get_model(model: str, vocab_en: Set[str]):
+    if model == 'ibm2':
+        ibm_model = IBM2Jump(vocab_en)
+    else:
+        ibm_model = IBM1(vocab_en)
+    return ibm_model
+
 def read_tokens(path: str, n:int=None) -> List[List[str]]:
     sentences = open(path, 'r', encoding='utf8').readlines()
     sentences_ = itertools.islice(sentences, n)
@@ -377,9 +390,7 @@ def read_data(n:int=None):
     tokenized_fr = read_tokens('data/training/hansards.36.2.f', n)
     training_corpus = list(zip(tokenized_en, tokenized_fr))
     vocab_en = sentence_vocab(tokenized_en)
-    vocab_fr = sentence_vocab(tokenized_fr)
     print(f'vocabulary size english: {len(vocab_en)}')
-    print(f'vocabulary size french:  {len(vocab_fr)}')
 
     # Read in validation data
     validation_corpus = list(zip(
@@ -395,9 +406,9 @@ def read_data(n:int=None):
     ))
     test_gold = aer.read_naacl_alignments('data/testing/answers/test.wa.nonullalign')
 
-    return (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_en, vocab_fr)
+    return (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_en)
 
-def test_model(ibm_model) -> None:
+def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold) -> None:
     # Print initial validation AER    
     initial_aer = ibm_model.calculate_aer(validation_corpus, validation_gold)
     print('Initial validation AER:', initial_aer)
@@ -444,18 +455,10 @@ def test_model(ibm_model) -> None:
 
 def main():
     n = None  # all training data
-    (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_en, vocab_fr) = read_data(n)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type = str, default = 'ibm1', help='model, ibm1 (default), ibm2')
-    flags, unparsed = parser.parse_known_args()
-
-    if flags.model == 'ibm2':
-        ibm_model = IBM2Jump(vocab_en)
-    else:
-        ibm_model = IBM1(vocab_en)
-
-    test_model(ibm_model)
+    (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_en) = read_data(n)
+    flags = get_flags()
+    ibm_model = get_model(flags.model, vocab_en)
+    test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold)
 
 if __name__ == '__main__':
     main()
