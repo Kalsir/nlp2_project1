@@ -49,6 +49,9 @@ docker run --rm -ti -v $PWD:/app ibm python main.py --model ibm2
         - [ ] model: technical description of models;
         - [ ] experiments: details about the data, experimental setup and findings;
         - [ ] conclusion: a critical take on contributions and limitations.
+- [ ] metrics we want to report on:
+    - [ ] AER score and log-likelihood averaged over sentence pairs
+    - [ ] test AER score when comparing best models
 
 ### Submission
 You should submit a tgz file containing a folder (folder namelastname1.lastname2) withthe following content:
