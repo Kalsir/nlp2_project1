@@ -156,7 +156,7 @@ class IBM2(IBM1):
 	def log_likelihood(self, english_sentence, foreign_sentence):	
 		len_e = len(english_sentence)
 		len_f = len(foreign_sentence)
-		log_likelihood = -math.log(len_f**len_e)
+		log_likelihood = 0
 		e_likelihoods = defaultdict(lambda: 0)
 		for e_idx, e in enumerate(english_sentence):				
 			for f_idx, f in enumerate(foreign_sentence):
@@ -257,26 +257,25 @@ class IBM2(IBM1):
 
 		return alignment
 
-# Incorrect version of IBM2Jump
-'''class IBM2Jump(IBM1):
-	def __init__(self, vocab_en, translation_probabilities = None):
-		super(IBM2Jump, self).__init__(vocab_en, translation_probabilities)
+class IBM2Jump(IBM1):
+	def __init__(self, english_vocab, translation_probabilities = None):
+		super(IBM2Jump, self).__init__(english_vocab, translation_probabilities)
 		self.jump_counts = defaultdict(lambda: 1)
 
 	# Calculate e-likelihoods and log-likelihood of sentence pair
 	def log_likelihood(self, english_sentence, foreign_sentence):	
 		len_e = len(english_sentence)
 		len_f = len(foreign_sentence)
-		log_likelihood = -math.log(len_f**len_e)
+		log_likelihood = 0
 		e_likelihoods = defaultdict(lambda: 0)
 
 		for e_idx, e in enumerate(english_sentence):	
 			normalizer = 0 # Normalize to have sensible log_likelihood
 			for f_idx, f in enumerate(foreign_sentence):
-				normalizer += self.jump_counts[e_idx - f_idx]
+				normalizer += self.jump_counts[f_idx - int(e_idx*len_f/len_e)]
 			for f_idx, f in enumerate(foreign_sentence):
 				translation_probability = self.translation_probabilities[e][f]
-				alignment_probabilility = self.jump_counts[e_idx - f_idx]/normalizer
+				alignment_probabilility = self.jump_counts[f_idx - int(e_idx*len_f/len_e)]/normalizer
 				e_likelihoods[e] += translation_probability*alignment_probabilility
 			log_likelihood += math.log(e_likelihoods[e])
 		return (log_likelihood, e_likelihoods)
@@ -284,7 +283,7 @@ class IBM2(IBM1):
 	# Train model
 	def train(self, training_corpus, iterations, validation_corpus, validation_gold):
 		for i in range(iterations):
-			print('\nStarting iteration', i+1)
+			print("\nStarting iteration", i+1)
 			expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times e is connected to f 
 			expected_total = defaultdict(lambda: 0) # Expected total connections for f
 			expected_jump_count = defaultdict(lambda: 0) # Expected connections with a certain jump length
@@ -298,6 +297,9 @@ class IBM2(IBM1):
 				# Add null token
 				foreign_sentence = [None] + foreign_sentence
 
+				len_e = len(english_sentence)
+				len_f = len(foreign_sentence)
+
 				# Calculate e-likelihoods and log-likelihood of sentence pair
 				log_likelihood, e_likelihoods = self.log_likelihood(english_sentence, foreign_sentence)
 				total_log_likelihood += log_likelihood
@@ -306,15 +308,15 @@ class IBM2(IBM1):
 				for e_idx, e in enumerate(english_sentence):
 					for f_idx, f in enumerate(foreign_sentence):
 						translation_probability = self.translation_probabilities[e][f]
-						alignment_probabilility = self.jump_counts[e_idx - f_idx]
+						alignment_probabilility = self.jump_counts[f_idx - int(e_idx*len_f/len_e)]
 						normalized_count = translation_probability*alignment_probabilility/e_likelihoods[e]
 						expected_count[e][f] += normalized_count
 						expected_total[f] += normalized_count
-						expected_jump_count[e_idx - f_idx] += normalized_count
+						expected_jump_count[f_idx - int(e_idx*len_f/len_e)] += normalized_count
 
 				# Print progress through training data
 				if (t+1)%10000 == 0:
-					print((t+1), 'out of', len(training_corpus), 'done')
+					print((t+1), "out of", len(training_corpus), "done")
 
 			# Update translation probabilities (Maximization step)
 			for e in expected_count.keys():
@@ -325,9 +327,9 @@ class IBM2(IBM1):
 			for jump in expected_jump_count.keys():
 				self.jump_counts[jump] = expected_jump_count[jump]
 			
-			print('\nIteration', i+1, 'complete')
-			print('Log-likelihood before:', total_log_likelihood)
-			print('Validation AER after:', self.calculate_aer(validation_corpus, validation_gold))
+			print("\nIteration", i+1, "complete")
+			print("Log-likelihood before:", total_log_likelihood)
+			print("Validation AER after:", self.calculate_aer(validation_corpus, validation_gold))
 
 	# Find best alignment for a sentence pair
 	def align(self, pair):
@@ -343,18 +345,17 @@ class IBM2(IBM1):
 		for e_idx, e in enumerate(english_sentence):
 			# Default alignment with null token
 			best_align = None
-			best_prob = self.translation_probabilities[e][None]*self.jump_counts[e_idx - 0] 
+			best_prob = self.translation_probabilities[e][None]*self.jump_counts[0 - int(e_idx*len_f/len_e)] 
 
 			# Check alignments with all other possible words
 			for f_idx, f in enumerate(foreign_sentence):
-				prob = self.translation_probabilities[e][f]*self.jump_counts[e_idx - f_idx] 
+				prob = self.translation_probabilities[e][f]*self.jump_counts[f_idx - int(e_idx*len_f/len_e)] 
 				if prob > best_prob:  # prefer newer word in case of tie
 					best_align = f_idx + 1 
 					best_prob = prob
 			alignment.add((e_idx+1, best_align))
 
 		return alignment
-'''
 
 def read_tokens(path: str, n:int=None) -> List[List[str]]:
 	sentences = open(path, 'r', encoding='utf8').readlines()
@@ -390,7 +391,7 @@ def main():
 	test_gold = aer.read_naacl_alignments('data/testing/answers/test.wa.nonullalign')
 
 	# Create ibm1 model
-	ibm1_model = IBM1(vocab_en)
+	ibm1_model = IBM2Jump(vocab_en)
 
 	# Print initial validation AER	
 	initial_aer = ibm1_model.calculate_aer(validation_corpus, validation_gold)
