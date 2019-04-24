@@ -307,8 +307,10 @@ class IBM2Jump(IBM1):
 				# Collect counts
 				for e_idx, e in enumerate(english_sentence):
 					for f_idx, f in enumerate(foreign_sentence):
+						normalizer += self.jump_counts[f_idx - int(e_idx*len_f/len_e)]
+					for f_idx, f in enumerate(foreign_sentence):
 						translation_probability = self.translation_probabilities[e][f]
-						alignment_probabilility = self.jump_counts[f_idx - int(e_idx*len_f/len_e)]
+						alignment_probabilility = self.jump_counts[f_idx - int(e_idx*len_f/len_e)]/normalizer
 						normalized_count = translation_probability*alignment_probabilility/e_likelihoods[e]
 						expected_count[e][f] += normalized_count
 						expected_total[f] += normalized_count
