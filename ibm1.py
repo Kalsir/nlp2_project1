@@ -76,7 +76,8 @@ class IBM1():
             print('Log-likelihood before:', total_log_likelihood)
             aer = self.calculate_aer(validation_corpus, validation_gold)
             print('Validation AER after:', aer)
-            total_log_likelihoods.append(total_log_likelihood)
+            # total_log_likelihoods.append(total_log_likelihood)
+            total_log_likelihoods.append(total_log_likelihood/len(training_corpus))
             aer_scores.append(aer)
         return (total_log_likelihoods, aer_scores)
 

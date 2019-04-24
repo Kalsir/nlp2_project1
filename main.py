@@ -70,7 +70,8 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
     #aer_scores = [initial_aer] + aer_scores
 
     # Print log-likelihood after training
-    final_log_likelihood = ibm_model.total_log_likelihood(training_corpus)
+    # final_log_likelihood = ibm_model.total_log_likelihood(training_corpus)
+    final_log_likelihood = ibm_model.total_log_likelihood(training_corpus)/len(training_corpus)
     print('\nFinal log-likelihood:', final_log_likelihood)
     # TODO: have train() return the log likelihoods from after the iteration as well?
     log_likelihoods = [*log_likelihoods[1:], final_log_likelihood]
@@ -81,13 +82,15 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
         'AER Score': aer_scores,
     }
     # Plot log-likelihood and aer curves
-    for label, ys in stats.items():
+    for i, (label, ys) in enumerate(stats.items()):
         # TODO: seaborn?
+        print('test')
+        name = 'log_likelihoods.png' if i==0 else 'aer_scores.png'
         fig = plt.figure()
         plt.plot(xs, ys)
         plt.xlabel('Iterations')
         plt.ylabel(label)
-        plt.savefig('IBM1_log_likelihoods.png')
+        plt.savefig(name)
         plt.close(fig)
 
     # TODO: df.to_csv?
