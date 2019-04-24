@@ -5,6 +5,7 @@ import itertools
 from typing import Tuple, List, Set, Dict
 import matplotlib.pyplot as plt
 import aer
+from tqdm import tqdm
 
 class IBM1():
 	def __init__(self, vocab_en, translation_probabilities = None):
@@ -50,7 +51,7 @@ class IBM1():
 	def train(self, training_corpus, iterations, validation_corpus, validation_gold):
 		total_log_likelihoods = []
 		aer_scores = []
-		for i in range(iterations):
+		for i in tqdm(range(iterations)):
 			print('\nStarting iteration', i+1)
 			expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times e is connected to f 
 			expected_total = defaultdict(lambda: 0) # Expected total connections for f
@@ -170,7 +171,7 @@ class IBM2(IBM1):
 	def train(self, training_corpus, iterations, validation_corpus, validation_gold):
 		total_log_likelihoods = []
 		aer_scores = []
-		for i in range(iterations):
+		for i in tqdm(range(iterations)):
 			print('\nStarting iteration', i+1)
 			expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times e is connected to f 
 			expected_total = defaultdict(lambda: 0) # Expected total connections for f
