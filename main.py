@@ -17,7 +17,7 @@ class IBM1():
 	
 	# Calculate log-likelihood of entire corpus
 	def total_log_likelihood(self, corpus):
-		print("\nCalculating log-likelihood")
+		print('\nCalculating log-likelihood')
 		total_log_likelihood = 0
 
 		for t in range(len(corpus)):
@@ -33,7 +33,7 @@ class IBM1():
 
 			# Print progress through corpus
 			if (t+1)%10000 == 0:
-				print((t+1), "out of", len(corpus), "done")
+				print((t+1), 'out of', len(corpus), 'done')
 		return total_log_likelihood
 	
 	# Calculate e-likelihoods and log-likelihood of sentence pair
@@ -51,7 +51,7 @@ class IBM1():
 		total_log_likelihoods = []
 		aer_scores = []
 		for i in range(iterations):
-			print("\nStarting iteration", i+1)
+			print('\nStarting iteration', i+1)
 			expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times e is connected to f 
 			expected_total = defaultdict(lambda: 0) # Expected total connections for f
 			total_log_likelihood = 0
@@ -77,17 +77,17 @@ class IBM1():
 
 				# Print progress through training data
 				if (t+1)%10000 == 0:
-					print((t+1), "out of", len(training_corpus), "done")
+					print((t+1), 'out of', len(training_corpus), 'done')
 
 			# Update translation probabilities (Maximization step)
 			for e in expected_count.keys():
 				for f in expected_count[e].keys():
 					self.translation_probabilities[e][f] = expected_count[e][f]/expected_total[f]
-				
-			print("\nIteration", i+1, "complete")
-			print("Log-likelihood before:", total_log_likelihood)
+
+			print('\nIteration', i+1, 'complete')
+			print('Log-likelihood before:', total_log_likelihood)
 			aer = self.calculate_aer(validation_corpus, validation_gold)
-			print("Validation AER after:", aer)
+			print('Validation AER after:', aer)
 			total_log_likelihoods.append(total_log_likelihood)
 			aer_scores.append(aer)
 		return (total_log_likelihoods, aer_scores)
@@ -171,7 +171,7 @@ class IBM2(IBM1):
 		total_log_likelihoods = []
 		aer_scores = []
 		for i in range(iterations):
-			print("\nStarting iteration", i+1)
+			print('\nStarting iteration', i+1)
 			expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times e is connected to f 
 			expected_total = defaultdict(lambda: 0) # Expected total connections for f
 			len_expected_count = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: 0)))) # Expected number of times e is connected to f in pairs of specific length
@@ -207,7 +207,7 @@ class IBM2(IBM1):
 
 				# Print progress through training data
 				if (t+1)%10000 == 0:
-					print((t+1), "out of", len(training_corpus), "done")
+					print((t+1), 'out of', len(training_corpus), 'done')
 
 			# Update translation probabilities (Maximization step)
 			for e in expected_count.keys():
@@ -222,10 +222,10 @@ class IBM2(IBM1):
 							new_value = len_expected_count[len_e][len_f][e_idx][f_idx]/len_expected_total[len_e][len_f][f_idx]
 							self.alignment_probabilities.write(len_e, len_f, e_idx, f_idx, new_value)
 				
-			print("\nIteration", i+1, "complete")
-			print("Log-likelihood before:", total_log_likelihood)
+			print('\nIteration', i+1, 'complete')
+			print('Log-likelihood before:', total_log_likelihood)
 			aer = self.calculate_aer(validation_corpus, validation_gold)
-			print("Validation AER after:", aer)
+			print('Validation AER after:', aer)
 			total_log_likelihoods.append(total_log_likelihood)
 			aer_scores.append(aer)
 		return (total_log_likelihoods, aer_scores)
@@ -284,7 +284,7 @@ class IBM2(IBM1):
 	# Train model
 	def train(self, training_corpus, iterations, validation_corpus, validation_gold):
 		for i in range(iterations):
-			print("\nStarting iteration", i+1)
+			print('\nStarting iteration', i+1)
 			expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times e is connected to f 
 			expected_total = defaultdict(lambda: 0) # Expected total connections for f
 			expected_jump_count = defaultdict(lambda: 0) # Expected connections with a certain jump length
@@ -314,7 +314,7 @@ class IBM2(IBM1):
 
 				# Print progress through training data
 				if (t+1)%10000 == 0:
-					print((t+1), "out of", len(training_corpus), "done")
+					print((t+1), 'out of', len(training_corpus), 'done')
 
 			# Update translation probabilities (Maximization step)
 			for e in expected_count.keys():
@@ -325,9 +325,9 @@ class IBM2(IBM1):
 			for jump in expected_jump_count.keys():
 				self.jump_counts[jump] = expected_jump_count[jump]
 			
-			print("\nIteration", i+1, "complete")
-			print("Log-likelihood before:", total_log_likelihood)
-			print("Validation AER after:", self.calculate_aer(validation_corpus, validation_gold))
+			print('\nIteration', i+1, 'complete')
+			print('Log-likelihood before:', total_log_likelihood)
+			print('Validation AER after:', self.calculate_aer(validation_corpus, validation_gold))
 
 	# Find best alignment for a sentence pair
 	def align(self, pair):
@@ -380,21 +380,21 @@ def main():
 		read_tokens('data/validation/dev.e'),
 		read_tokens('data/validation/dev.f'),
 	))
-	validation_gold = aer.read_naacl_alignments("data/validation/dev.wa.nonullalign")
+	validation_gold = aer.read_naacl_alignments('data/validation/dev.wa.nonullalign')
 
 	# Read in test data
 	test_corpus = list(zip(
 		read_tokens('data/testing/test/test.e'),
 		read_tokens('data/testing/test/test.f'),
 	))
-	test_gold = aer.read_naacl_alignments("data/testing/answers/test.wa.nonullalign")
+	test_gold = aer.read_naacl_alignments('data/testing/answers/test.wa.nonullalign')
 
 	# Create ibm1 model
 	ibm1_model = IBM1(vocab_en)
 
 	# Print initial validation AER	
 	initial_aer = ibm1_model.calculate_aer(validation_corpus, validation_gold)
-	print("Initial validation AER:", initial_aer)
+	print('Initial validation AER:', initial_aer)
 	
 	# Train the model
 	iterations = 15
@@ -403,35 +403,35 @@ def main():
 
 	# Print log-likelihood after training
 	final_log_likelihood = ibm1_model.total_log_likelihood(training_corpus)
-	print("\nFinal log-likelihood:", final_log_likelihood)
+	print('\nFinal log-likelihood:', final_log_likelihood)
 	log_likelihoods.append(final_log_likelihood)
 	log_likelihoods.pop(0)
 
 	# Plot log-likelihood and aer curves
 	fig = plt.figure()
 	plt.plot(list(range(iterations+1))[1:], log_likelihoods)
-	plt.xlabel("Iterations")
-	plt.ylabel("Log-likelihood")
-	plt.savefig("IBM1_log_likelihoods.png")
+	plt.xlabel('Iterations')
+	plt.ylabel('Log-likelihood')
+	plt.savefig('IBM1_log_likelihoods.png')
 	plt.close(fig)
 
 	fig = plt.figure()
 	plt.plot(list(range(iterations+1))[1:], aer_scores)
-	plt.xlabel("Iterations")
-	plt.ylabel("AER Score")
-	plt.savefig("IBM1_aer_scores.png")
+	plt.xlabel('Iterations')
+	plt.ylabel('AER Score')
+	plt.savefig('IBM1_aer_scores.png')
 	plt.close(fig)
 
-	f = open("run_log.txt","w+")
+	f = open('run_log.txt','w+')
 	for i in range(iterations):
-		f.write("Iteration: " + str(i+1) + " Log-likelihood: " + str(log_likelihoods[i]) + " AER score: " + str(aer_scores[i]) + "\n")
+		f.write('Iteration: ' + str(i+1) + ' Log-likelihood: ' + str(log_likelihoods[i]) + ' AER score: ' + str(aer_scores[i]) + '\n')
 
 	# Create ibm2 model and train it
 	#ibm2_model = IBM2(vocab_en, ibm1_model.translation_probabilities)
 	#ibm2_model.train(training_corpus, 5, validation_corpus, validation_gold)
 
 	# Print log-likelihood after training
-	#print("\nFinal log-likelihood:", ibm2_model.total_log_likelihood(training_corpus))
+	#print('\nFinal log-likelihood:', ibm2_model.total_log_likelihood(training_corpus))
 
 	# Print dictionary
 	#ibm1_model.print_dictionary()
