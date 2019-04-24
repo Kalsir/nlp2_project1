@@ -306,6 +306,7 @@ class IBM2Jump(IBM1):
 
 				# Collect counts
 				for e_idx, e in enumerate(english_sentence):
+					normalizer = 0
 					for f_idx, f in enumerate(foreign_sentence):
 						normalizer += self.jump_counts[f_idx - int(e_idx*len_f/len_e)]
 					for f_idx, f in enumerate(foreign_sentence):
