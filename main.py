@@ -108,6 +108,7 @@ def main():
     (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target) = read_data(flags.lines)
 
     # optionally load in previously trained probabilities
+    probabilities = None
     prob_f = flags.probabilities
     if prob_f:
         with open(prob_f, 'rb') as f:
