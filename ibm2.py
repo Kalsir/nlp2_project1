@@ -1,5 +1,5 @@
 from typing import Tuple, List, Set, Dict, DefaultDict
-from collections import defaultdict
+from collections.abc import defaultdict
 import math
 from ibm1 import IBM1
 from tqdm import tqdm, trange

@@ -17,12 +17,12 @@ class IBM1():
         else:
             self.translation_probabilities = translation_probabilities
 
-    def total_log_likelihood(self, corpus: List[Tuple[str, str]]) -> int:
+    def total_log_likelihood(self, corpus: List[Tuple[List[str], List[str]]]) -> int:
         """Calculate log-likelihood of entire corpus"""
         print('\nCalculating log-likelihood')
         return sum(map(self.pair_log_likelihood, tqdm(corpus, desc='corpus')))
 
-    def pair_log_likelihood(self, pair: Tuple[str, str]) -> int:
+    def pair_log_likelihood(self, pair: Tuple[List[str], List[str]]) -> int:
         # Expand sentence pair
         target_sentence, source_sentence = pair
 
@@ -33,7 +33,7 @@ class IBM1():
         log_likelihood, _ = self.log_likelihood(target_sentence, source_sentence)
         return log_likelihood
 
-    def log_likelihood(self, target_sentence: str, source_sentence: str) -> int:    
+    def log_likelihood(self, target_sentence: List[str], source_sentence: List[str]) -> int:    
         """Calculate target_token-likelihoods and log-likelihood of sentence pair"""
         log_likelihood = -math.log(len(source_sentence)**len(target_sentence))
         target_likelihoods = defaultdict(lambda: 0)
@@ -43,7 +43,7 @@ class IBM1():
             log_likelihood += math.log(target_likelihoods[target_token])
         return (log_likelihood, target_likelihoods)
 
-    def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[int, int]]]) -> Tuple[List[int], List[int]]:
+    def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]]) -> Tuple[List[int], List[int]]:
         """Train model"""
         total_log_likelihoods = []
         aer_scores = []
@@ -95,7 +95,7 @@ class IBM1():
         """Print most likely translation for each foreign word"""
         for target_token in self.vocab_target:
             probs = self.translation_probabilities[target_token]
-            print(target_token, max(zip(probs.values(), probs.keys())))
+            print(target_token, max(zip(probs.values(), probs.keys())) if probs else (0.0, None))
 
     def align(self, pair: Tuple[str, str]) -> Set[Tuple[int, int]]:
         """Find best alignment for a sentence pair"""
@@ -121,7 +121,7 @@ class IBM1():
 
         return alignment
 
-    def calculate_aer(self, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[int, int]]]):
+    def calculate_aer(self, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]]) -> float:
         """Calculate AER on validation corpus using gold standard"""
         # Compute predictions
         predictions = []
