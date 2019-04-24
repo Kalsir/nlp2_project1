@@ -98,27 +98,16 @@ class IBM1():
 
     def align(self, pair: Tuple[str, str]) -> Set[Tuple[int, int]]:
         """Find best alignment for a sentence pair"""
-        # Expand sentence pair
         target_sentence, source_sentence = pair
+        aligns = map(lambda target_token: self.best_align(source_sentence, target_token), target_sentence)
+        # 1-indexed because AER is into that...
+        return set(map(lambda k_v: (k_v[0]+1, k_v[1]+1 if k_v[1] else None), enumerate(aligns)))
 
-        # Initialize alignment
-        alignment = set()
-
-        # Add best link for every english word
-        for target_idx, target_token in enumerate(target_sentence):
-            # Default alignment with null token
-            best_align = None
-            best_prob = self.translation_probabilities[target_token][None]     
-
-            # Check alignments with all other possible words
-            for source_idx, source_token in enumerate(source_sentence):
-                prob = self.translation_probabilities[target_token][source_token] 
-                if prob >= best_prob:  # prefer newer word in case of tie
-                    best_align = source_idx + 1 
-                    best_prob = prob
-            alignment.add((target_idx+1, best_align))
-
-        return alignment
+    def best_align(self, source_sentence: List[str], target_token: str) -> int:
+        """Find best alignment for a target token from a source sentence"""
+        probs = map(lambda source_token: self.translation_probabilities[target_token][source_token], source_sentence)
+        # np.argmax errors on empty list
+        return np.argmax(probs) if probs else None
 
     def calculate_aer(self, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]]) -> float:
         """Calculate AER on validation corpus using gold standard"""
