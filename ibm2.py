@@ -29,10 +29,13 @@ class IBM2(IBM1):
         len_source = len(foreign_sentence)
         log_likelihood = 0
         target_likelihoods = defaultdict(lambda: 0)
-        for target_idx, target_token in enumerate(target_sentence):                
+        for target_idx, target_token in enumerate(target_sentence):       
+            normalizer = 0
+            for source_idx, source_token in enumerate(foreign_sentence):
+                normalizer += self.alignment_probabilities.read(len_target, len_source, target_idx, source_idx)
             for source_idx, source_token in enumerate(foreign_sentence):
                 translation_probability = self.translation_probabilities[target_token][source_token]
-                alignment_probabilility = self.alignment_probabilities.read(len_target, len_source, target_idx, source_idx)
+                alignment_probabilility = self.alignment_probabilities.read(len_target, len_source, target_idx, source_idx)/normalizer
                 target_likelihoods[target_token] += translation_probability*alignment_probabilility
             log_likelihood += math.log(target_likelihoods[target_token])
         return (log_likelihood, target_likelihoods)

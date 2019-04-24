@@ -24,7 +24,7 @@ def get_flags():
 def get_model(model: str, vocab_target: Set[str], probabilities: DefaultDict[str, DefaultDict[str, int]]):
     if model == 'ibm2':
         ibm_model = IBM2(vocab_target, probabilities)
-    if model == 'jump':
+    elif model == 'jump':
         ibm_model = IBM2Jump(vocab_target, probabilities)
     else:
         ibm_model = IBM1(vocab_target, probabilities)
@@ -34,7 +34,7 @@ def read_tokens(path: str, n:int=None) -> List[List[str]]:
     sentences = open(path, 'r', encoding='utf8').readlines()
     sentences_ = itertools.islice(sentences, n)
     # we split on spaces as the hansards dataset uses explicit spacing between tokens
-    return [sentence.split(' ')[:-1] for sentence in sentences_]
+    return [sentence[:-1].split(' ') for sentence in sentences_]
 
 def sentence_vocab(tokenized: List[List[str]]) -> Set[str]:
     return set([token for tokens in tokenized for token in tokens])
