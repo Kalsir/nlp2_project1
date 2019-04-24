@@ -6,7 +6,7 @@ import itertools
 from typing import Tuple, List, Set, Dict
 import matplotlib.pyplot as plt
 import aer
-from tqdm import tqdm
+from tqdm import tqdm, trange
 
 class IBM1():
     def __init__(self, vocab_en, translation_probabilities = None):
@@ -364,12 +364,14 @@ class IBM2Jump(IBM1):
 
 def get_flags():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type = str, default = 'ibm1', help='model, ibm1 (default), ibm2')
+    parser.add_argument('--model', type = str, default = 'ibm1', help='model, ibm1 (default), ibm2, jump')
     flags, unparsed = parser.parse_known_args()
     return flags
 
 def get_model(model: str, vocab_en: Set[str]):
     if model == 'ibm2':
+        ibm_model = IBM2(vocab_en)
+    if model == 'jump':
         ibm_model = IBM2Jump(vocab_en)
     else:
         ibm_model = IBM1(vocab_en)
@@ -423,24 +425,25 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
     print('\nFinal log-likelihood:', final_log_likelihood)
     log_likelihoods.append(final_log_likelihood)
     log_likelihoods.pop(0)
+    xs = list(range(1, iterations+1))
 
     # Plot log-likelihood and aer curves
     fig = plt.figure()
-    plt.plot(list(range(iterations+1))[1:], log_likelihoods)
+    plt.plot(xs, log_likelihoods)
     plt.xlabel('Iterations')
     plt.ylabel('Log-likelihood')
     plt.savefig('IBM1_log_likelihoods.png')
     plt.close(fig)
 
     fig = plt.figure()
-    plt.plot(list(range(iterations+1))[1:], aer_scores)
+    plt.plot(xs, aer_scores)
     plt.xlabel('Iterations')
     plt.ylabel('AER Score')
     plt.savefig('IBM1_aer_scores.png')
     plt.close(fig)
 
     f = open('run_log.txt','w+')
-    for i in range(iterations):
+    for i in tqdm(range(iterations)):
         f.write('Iteration: ' + str(i+1) + ' Log-likelihood: ' + str(log_likelihoods[i]) + ' AER score: ' + str(aer_scores[i]) + '\n')
 
     # Create ibm2 model and train it
