@@ -1,5 +1,12 @@
 # UvA Natural Language Processing II practical I
 
+## Usage
+
+```bash
+pip install -r requirements.txt
+python main.m
+```
+
 ## Roadmap
 
 ### IBM model 1
@@ -46,6 +53,7 @@ You should submit a tgz file containing a folder (folder namelastname1.lastname2
 - [ ] Test predictions (in naacl format) using your best run for each of the following models
     - [ ] IBM1 MLE (filename:ibm1.mle.naacl)
     - [ ] IBM2 MLE (filename:ibm2.mle.naacl)
+    - [ ] output alignments to naacl file
 - [ ] Report as a single pdf file (filename:report.pdf)
 - [ ] Your report may contain a link to an open-source repository (such as github), but please do not attach code or additional data to your tgz submission.
 - [ ] You can complete your project submission on Canvas.
@@ -66,3 +74,4 @@ Your report will be assessed according to the following evaluation criteria:
     - [ ] use of tables/figures/plots,
     - [ ] command of English.
 - [ ] 5. Extra (max 1 point).
+    - [ ] neuralibm notebook which we can do as extra
