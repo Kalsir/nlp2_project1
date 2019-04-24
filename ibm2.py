@@ -1,6 +1,7 @@
 from collections import defaultdict
 import math
 from ibm1 import IBM1
+from tqdm import trange
 
 class AlignmentProbabilities():
     def __init__(self):
@@ -37,8 +38,7 @@ class IBM2(IBM1):
     def train(self, training_corpus, iterations, validation_corpus, validation_gold):
         total_log_likelihoods = []
         aer_scores = []
-        for i in tqdm(range(iterations)):
-            print('\nStarting iteration', i+1)
+        for i in trange(iterations, desc='iteration'):
             expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times target_token is connected to source_token 
             expected_total = defaultdict(lambda: 0) # Expected total connections for source_token
             len_expected_count = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: 0)))) # Expected number of times target_token is connected to source_token in pairs of specific length

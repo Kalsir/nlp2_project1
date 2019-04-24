@@ -43,7 +43,7 @@ class IBM1():
         total_log_likelihoods = []
         aer_scores = []
 
-        for i in trange(iterations, desc='iterations', position=0):
+        for i in trange(iterations, desc='iteration', position=0):
             expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times target_token is connected to source_token 
             expected_total = defaultdict(lambda: 0) # Expected total connections for source_token
             total_log_likelihood = 0

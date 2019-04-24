@@ -92,7 +92,7 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
 
     # TODO: df.to_csv?
     f = open('run_log.txt','w+')
-    for i in tqdm(range(iterations)):
+    for i in tqdm(range(iterations), desc='writing'):
         f.write('Iteration: ' + str(i+1) + ' Log-likelihood: ' + str(log_likelihoods[i]) + ' AER score: ' + str(aer_scores[i]) + '\n')
 
     # Create ibm2 model and train it
