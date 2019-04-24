@@ -1,7 +1,7 @@
 from collections import defaultdict
 import argparse
 import itertools
-from typing import Tuple, List, Set, Dict
+from typing import Tuple, List, Set, Dict, DefaultDict
 import matplotlib.pyplot as plt
 import aer
 from tqdm import tqdm, trange
@@ -9,22 +9,24 @@ from pdb import set_trace
 from ibm1 import IBM1
 from ibm2 import IBM2
 from jump import IBM2Jump
+import dill as pickle
 
 def get_flags():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type = str, default = 'ibm1', help='model, ibm1 (default), ibm2, jump')
     parser.add_argument('--lines', type = int, default = None, help='number of lines of training data to use, default all')
     parser.add_argument('--iterations', type = int, default = 15, help='number of iterations, default 15')
+    parser.add_argument('--probabilities', type = str, default = None, help='file to load previously trained probabilities from (default none)')
     flags, unparsed = parser.parse_known_args()
     return flags
 
-def get_model(model: str, vocab_target: Set[str]):
+def get_model(model: str, vocab_target: Set[str], probabilities: DefaultDict[str, DefaultDict[str, int]]):
     if model == 'ibm2':
-        ibm_model = IBM2(vocab_target)
+        ibm_model = IBM2(vocab_target, probabilities)
     if model == 'jump':
-        ibm_model = IBM2Jump(vocab_target)
+        ibm_model = IBM2Jump(vocab_target, probabilities)
     else:
-        ibm_model = IBM1(vocab_target)
+        ibm_model = IBM1(vocab_target, probabilities)
     return ibm_model
 
 def read_tokens(path: str, n:int=None) -> List[List[str]]:
@@ -105,14 +107,19 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
     # Print dictionary
     #ibm_model.print_dictionary()
 
-    set_trace()
-
-    # TODO: dump/load model probabilities
-
 def main():
     flags = get_flags()
     (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target) = read_data(flags.lines)
-    ibm_model = get_model(flags.model, vocab_target)
+
+    # optionally load in previously trained probabilities
+    prob_f = flags.probabilities
+    if prob_f:
+        with open(prob_f, 'rb') as f:
+            probabilities = pickle.load(f)
+
+    ibm_model = get_model(flags.model, vocab_target, probabilities)
+    with open(f'{flags.model}.pkl', 'wb') as f:
+        pickle.dump(ibm_model.translation_probabilities, f)
     test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, flags.iterations)
 
 if __name__ == '__main__':
