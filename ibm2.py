@@ -1,6 +1,10 @@
+from typing import Tuple, List, Set, Dict, DefaultDict
 from collections import defaultdict
 import math
 from ibm1 import IBM1
+from tqdm import tqdm, trange
+import yaml
+from tensorboardX import SummaryWriter
 
 class AlignmentProbabilities():
     def __init__(self):
@@ -37,64 +41,67 @@ class IBM2(IBM1):
     def train(self, training_corpus, iterations, validation_corpus, validation_gold):
         total_log_likelihoods = []
         aer_scores = []
-        for i in tqdm(range(iterations)):
-            print('\nStarting iteration', i+1)
-            expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times target_token is connected to source_token 
-            expected_total = defaultdict(lambda: 0) # Expected total connections for source_token
-            len_expected_count = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: 0)))) # Expected number of times target_token is connected to source_token in pairs of specific length
-            len_expected_total = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: 0))) # Expected number of total connections for source_token in pairs of specific length
-            total_log_likelihood = 0
+        with SummaryWriter(self.__class__.__name__) as w:
+            for i in trange(iterations, desc='iteration'):
+                expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times target_token is connected to source_token 
+                expected_total = defaultdict(lambda: 0) # Expected total connections for source_token
+                len_expected_count = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: 0)))) # Expected number of times target_token is connected to source_token in pairs of specific length
+                len_expected_total = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: 0))) # Expected number of total connections for source_token in pairs of specific length
+                total_log_likelihood = 0
 
-            # Calculate expected counts (Expectation step) and log-likelihood
-            for t in range(len(training_corpus)):
-                # Expand sentence pair
-                target_sentence, foreign_sentence = training_corpus[t]
+                # Calculate expected counts (Expectation step) and log-likelihood
+                for t in range(len(training_corpus)):
+                    # Expand sentence pair
+                    target_sentence, foreign_sentence = training_corpus[t]
 
-                # Add null token
-                foreign_sentence = [None] + foreign_sentence
+                    # Add null token
+                    foreign_sentence = [None] + foreign_sentence
 
-                # Calculate sentence lenghts 
-                len_target = len(target_sentence)
-                len_source = len(foreign_sentence)                    
+                    # Calculate sentence lenghts 
+                    len_target = len(target_sentence)
+                    len_source = len(foreign_sentence)                    
 
-                # Calculate target_token likelihoods and log-likelihood of sentence pair
-                log_likelihood, target_likelihoods = self.log_likelihood(target_sentence, foreign_sentence)
-                total_log_likelihood += log_likelihood
+                    # Calculate target_token likelihoods and log-likelihood of sentence pair
+                    log_likelihood, target_likelihoods = self.log_likelihood(target_sentence, foreign_sentence)
+                    total_log_likelihood += log_likelihood
 
-                # Collect counts
-                for target_idx, target_token in enumerate(target_sentence):
-                    for source_idx, source_token in enumerate(foreign_sentence):
-                        translation_probability = self.translation_probabilities[target_token][source_token]
-                        alignment_probabilility = self.alignment_probabilities.read(len_target, len_source, target_idx, source_idx)
-                        normalized_count = translation_probability*alignment_probabilility/target_likelihoods[target_token]
-                        expected_count[target_token][source_token] += normalized_count
-                        expected_total[source_token] += normalized_count
-                        len_expected_count[len_target][len_source][target_idx][source_idx] += normalized_count
-                        len_expected_total[len_target][len_source][source_idx] += normalized_count
+                    # Collect counts
+                    for target_idx, target_token in enumerate(target_sentence):
+                        for source_idx, source_token in enumerate(foreign_sentence):
+                            translation_probability = self.translation_probabilities[target_token][source_token]
+                            alignment_probabilility = self.alignment_probabilities.read(len_target, len_source, target_idx, source_idx)
+                            normalized_count = translation_probability*alignment_probabilility/target_likelihoods[target_token]
+                            expected_count[target_token][source_token] += normalized_count
+                            expected_total[source_token] += normalized_count
+                            len_expected_count[len_target][len_source][target_idx][source_idx] += normalized_count
+                            len_expected_total[len_target][len_source][source_idx] += normalized_count
 
-                # Print progress through training data
-                if (t+1)%10000 == 0:
-                    print((t+1), 'out of', len(training_corpus), 'done')
+                    # Print progress through training data
+                    if (t+1)%10000 == 0:
+                        print((t+1), 'out of', len(training_corpus), 'done')
 
-            # Update translation probabilities (Maximization step)
-            for target_token in expected_count.keys():
-                for source_token in expected_count[target_token].keys():
-                    self.translation_probabilities[target_token][source_token] = expected_count[target_token][source_token]/expected_total[source_token]
+                # Update translation probabilities (Maximization step)
+                for target_token in expected_count.keys():
+                    for source_token in expected_count[target_token].keys():
+                        self.translation_probabilities[target_token][source_token] = expected_count[target_token][source_token]/expected_total[source_token]
 
-            # Update alignment probabilities (Maximization step)
-            for len_target in len_expected_count.keys():
-                for len_source in len_expected_count[len_target].keys():
-                    for target_idx in len_expected_count[len_target][len_source].keys():
-                        for source_idx in len_expected_count[len_target][len_source][target_idx].keys():
-                            new_value = len_expected_count[len_target][len_source][target_idx][source_idx]/len_expected_total[len_target][len_source][source_idx]
-                            self.alignment_probabilities.write(len_target, len_source, target_idx, source_idx, new_value)
+                # Update alignment probabilities (Maximization step)
+                for len_target in len_expected_count.keys():
+                    for len_source in len_expected_count[len_target].keys():
+                        for target_idx in len_expected_count[len_target][len_source].keys():
+                            for source_idx in len_expected_count[len_target][len_source][target_idx].keys():
+                                new_value = len_expected_count[len_target][len_source][target_idx][source_idx]/len_expected_total[len_target][len_source][source_idx]
+                                self.alignment_probabilities.write(len_target, len_source, target_idx, source_idx, new_value)
 
-            print('\nIteration', i+1, 'complete')
-            print('Log-likelihood before:', total_log_likelihood)
-            aer = self.calculate_aer(validation_corpus, validation_gold)
-            print('Validation AER after:', aer)
-            total_log_likelihoods.append(total_log_likelihood)
-            aer_scores.append(aer)
+                aer = self.calculate_aer(validation_corpus, validation_gold)
+                stats = {
+                    'Log-likelihood before': total_log_likelihood,
+                    'Validation AER after': aer,
+                }
+                print(yaml.dump(stats))
+                w.add_scalars('metrics', stats, i)
+                total_log_likelihoods.append(total_log_likelihood)
+                aer_scores.append(aer)
         return (total_log_likelihoods, aer_scores)
 
 

@@ -1,7 +1,10 @@
+from typing import Tuple, List, Set, Dict, Any
 from collections import defaultdict
 import math
 from aer import AERSufficientStatistics
 from tqdm import tqdm, trange
+import yaml
+from tensorboardX import SummaryWriter
 
 class IBM1():
     def __init__(self, vocab_target, translation_probabilities = None):
@@ -43,42 +46,47 @@ class IBM1():
         total_log_likelihoods = []
         aer_scores = []
 
-        for i in trange(iterations, desc='iterations', position=0):
-            expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times target_token is connected to source_token 
-            expected_total = defaultdict(lambda: 0) # Expected total connections for source_token
-            total_log_likelihood = 0
+        with SummaryWriter(self.__class__.__name__) as w:
+            for i in trange(iterations, desc='iteration', position=0):
+                # Expected number of times target_token is connected to source_token
+                expected_count = defaultdict(lambda: defaultdict(lambda: 0))
+                # Expected total connections for source_token
+                expected_total = defaultdict(lambda: 0)
+                total_log_likelihood = 0
 
-            # Calculate expected counts (Expectation step) and log-likelihood
-            for t in trange(len(training_corpus), desc='training_corpus', position=1):
-                # Expand sentence pair
-                target_sentence, source_sentence = training_corpus[t]
+                # Calculate expected counts (Expectation step) and log-likelihood
+                for pair in tqdm(training_corpus, desc='training_corpus', position=1):
+                    # Expand sentence pair
+                    target_sentence, source_sentence = pair
 
-                # Add null token
-                source_sentence = [None] + source_sentence        
+                    # Add null token
+                    source_sentence = [None] + source_sentence        
 
-                # Calculate target_token-likelihoods and log-likelihood of sentence pair
-                log_likelihood, target_likelihoods = self.log_likelihood(target_sentence, source_sentence)
-                total_log_likelihood += log_likelihood
+                    # Calculate target_token-likelihoods and log-likelihood of sentence pair
+                    log_likelihood, target_likelihoods = self.log_likelihood(target_sentence, source_sentence)
+                    total_log_likelihood += log_likelihood
 
-                # Collect counts
-                for target_token in target_sentence:
-                    for source_token in source_sentence:
-                        normalized_count = self.translation_probabilities[target_token][source_token]/target_likelihoods[target_token]
-                        expected_count[target_token][source_token] += normalized_count
-                        expected_total[source_token] += normalized_count
+                    # Collect counts
+                    for target_token in target_sentence:
+                        for source_token in source_sentence:
+                            normalized_count = self.translation_probabilities[target_token][source_token]/target_likelihoods[target_token]
+                            expected_count[target_token][source_token] += normalized_count
+                            expected_total[source_token] += normalized_count
+                
+                # Update translation probabilities (Maximization step)
+                for target_token in expected_count.keys():
+                    for source_token in expected_count[target_token].keys():
+                        self.translation_probabilities[target_token][source_token] = expected_count[target_token][source_token]/expected_total[source_token]
 
-            # Update translation probabilities (Maximization step)
-            for target_token in expected_count.keys():
-                for source_token in expected_count[target_token].keys():
-                    self.translation_probabilities[target_token][source_token] = expected_count[target_token][source_token]/expected_total[source_token]
-
-            print('\nIteration', i+1, 'complete')
-            print('Log-likelihood before:', total_log_likelihood)
-            aer = self.calculate_aer(validation_corpus, validation_gold)
-            print('Validation AER after:', aer)
-            # total_log_likelihoods.append(total_log_likelihood)
-            total_log_likelihoods.append(total_log_likelihood/len(training_corpus))
-            aer_scores.append(aer)
+                aer = self.calculate_aer(validation_corpus, validation_gold)
+                stats = {
+                    'Log-likelihood before': total_log_likelihood,
+                    'Validation AER after': aer,
+                }
+                print(yaml.dump(stats))
+                w.add_scalars('metrics', stats, i)
+                total_log_likelihoods.append(total_log_likelihood/len(training_corpus))
+                aer_scores.append(aer)
         return (total_log_likelihoods, aer_scores)
 
     # Print most likely translation for each foreign word
