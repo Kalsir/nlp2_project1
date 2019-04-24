@@ -7,23 +7,23 @@ class IBM2Jump(IBM1):
         super(IBM2Jump, self).__init__(english_vocab, translation_probabilities)
         self.jump_counts = defaultdict(lambda: 1)
 
-    # Calculate e-likelihoods and log-likelihood of sentence pair
-    def log_likelihood(self, english_sentence, foreign_sentence):    
-        len_e = len(english_sentence)
-        len_f = len(foreign_sentence)
+    # Calculate target_token likelihoods and log-likelihood of sentence pair
+    def log_likelihood(self, target_sentence, foreign_sentence):    
+        len_target = len(target_sentence)
+        len_source = len(foreign_sentence)
         log_likelihood = 0
-        e_likelihoods = defaultdict(lambda: 0)
+        target_likelihoods = defaultdict(lambda: 0)
 
-        for e_idx, e in enumerate(english_sentence):    
+        for target_idx, target_token in enumerate(target_sentence):    
             normalizer = 0 # Normalize to have sensible log_likelihood
-            for f_idx, f in enumerate(foreign_sentence):
-                normalizer += self.jump_counts[f_idx - int(e_idx*len_f/len_e)]
-            for f_idx, f in enumerate(foreign_sentence):
-                translation_probability = self.translation_probabilities[e][f]
-                alignment_probabilility = self.jump_counts[f_idx - int(e_idx*len_f/len_e)]/normalizer
-                e_likelihoods[e] += translation_probability*alignment_probabilility
-            log_likelihood += math.log(e_likelihoods[e])
-        return (log_likelihood, e_likelihoods)
+            for source_idx, source_token in enumerate(foreign_sentence):
+                normalizer += self.jump_counts[source_idx - int(target_idx*len_source/len_target)]
+            for source_idx, source_token in enumerate(foreign_sentence):
+                translation_probability = self.translation_probabilities[target_token][source_token]
+                alignment_probabilility = self.jump_counts[source_idx - int(target_idx*len_source/len_target)]/normalizer
+                target_likelihoods[target_token] += translation_probability*alignment_probabilility
+            log_likelihood += math.log(target_likelihoods[target_token])
+        return (log_likelihood, target_likelihoods)
 
     # Train model
     def train(self, training_corpus, iterations, validation_corpus, validation_gold):
@@ -31,47 +31,47 @@ class IBM2Jump(IBM1):
         aer_scores = []
         for i in range(iterations):
             print("\nStarting iteration", i+1)
-            expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times e is connected to f 
-            expected_total = defaultdict(lambda: 0) # Expected total connections for f
+            expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times target_token is connected to source_token 
+            expected_total = defaultdict(lambda: 0) # Expected total connections for source_token
             expected_jump_count = defaultdict(lambda: 0) # Expected connections with a certain jump length
             total_log_likelihood = 0
 
             # Calculate expected counts (Expectation step) and log-likelihood
             for t in range(len(training_corpus)):
                 # Expand sentence pair
-                english_sentence, foreign_sentence = training_corpus[t]
+                target_sentence, foreign_sentence = training_corpus[t]
 
                 # Add null token
                 foreign_sentence = [None] + foreign_sentence
 
-                len_e = len(english_sentence)
-                len_f = len(foreign_sentence)
+                len_target = len(target_sentence)
+                len_source = len(foreign_sentence)
 
-                # Calculate e-likelihoods and log-likelihood of sentence pair
-                log_likelihood, e_likelihoods = self.log_likelihood(english_sentence, foreign_sentence)
+                # Calculate target_token likelihoods and log-likelihood of sentence pair
+                log_likelihood, target_likelihoods = self.log_likelihood(target_sentence, foreign_sentence)
                 total_log_likelihood += log_likelihood
 
                 # Collect counts
-                for e_idx, e in enumerate(english_sentence):
+                for target_idx, target_token in enumerate(target_sentence):
                     normalizer = 0
-                    for f_idx, f in enumerate(foreign_sentence):
-                        normalizer += self.jump_counts[f_idx - int(e_idx*len_f/len_e)]
-                    for f_idx, f in enumerate(foreign_sentence):
-                        translation_probability = self.translation_probabilities[e][f]
-                        alignment_probabilility = self.jump_counts[f_idx - int(e_idx*len_f/len_e)]/normalizer
-                        normalized_count = translation_probability*alignment_probabilility/e_likelihoods[e]
-                        expected_count[e][f] += normalized_count
-                        expected_total[f] += normalized_count
-                        expected_jump_count[f_idx - int(e_idx*len_f/len_e)] += normalized_count
+                    for source_idx, source_token in enumerate(foreign_sentence):
+                        normalizer += self.jump_counts[source_idx - int(target_idx*len_source/len_target)]
+                    for source_idx, source_token in enumerate(foreign_sentence):
+                        translation_probability = self.translation_probabilities[target_token][source_token]
+                        alignment_probabilility = self.jump_counts[source_idx - int(target_idx*len_source/len_target)]/normalizer
+                        normalized_count = translation_probability*alignment_probabilility/target_likelihoods[target_token]
+                        expected_count[target_token][source_token] += normalized_count
+                        expected_total[source_token] += normalized_count
+                        expected_jump_count[source_idx - int(target_idx*len_source/len_target)] += normalized_count
 
                 # Print progress through training data
                 if (t+1)%10000 == 0:
                     print((t+1), "out of", len(training_corpus), "done")
 
             # Update translation probabilities (Maximization step)
-            for e in expected_count.keys():
-                for f in expected_count[e].keys():
-                    self.translation_probabilities[e][f] = expected_count[e][f]/expected_total[f]
+            for target_token in expected_count.keys():
+                for source_token in expected_count[target_token].keys():
+                    self.translation_probabilities[target_token][source_token] = expected_count[target_token][source_token]/expected_total[source_token]
 
             # Update jump counts (Maximization step)
             for jump in expected_jump_count.keys():
@@ -88,25 +88,25 @@ class IBM2Jump(IBM1):
     # Find best alignment for a sentence pair
     def align(self, pair):
         # Expand sentence pair
-        english_sentence, foreign_sentence = pair
-        len_e = len(english_sentence)
-        len_f = len(foreign_sentence)
+        target_sentence, foreign_sentence = pair
+        len_target = len(target_sentence)
+        len_source = len(foreign_sentence)
 
         # Initialize alignment
         alignment = set()
 
         # Add best link for every english word
-        for e_idx, e in enumerate(english_sentence):
+        for target_idx, target_token in enumerate(target_sentence):
             # Default alignment with null token
             best_align = None
-            best_prob = self.translation_probabilities[e][None]*self.jump_counts[0 - int(e_idx*len_f/len_e)] 
+            best_prob = self.translation_probabilities[target_token][None]*self.jump_counts[0 - int(target_idx*len_source/len_target)] 
 
             # Check alignments with all other possible words
-            for f_idx, f in enumerate(foreign_sentence):
-                prob = self.translation_probabilities[e][f]*self.jump_counts[f_idx - int(e_idx*len_f/len_e)] 
+            for source_idx, source_token in enumerate(foreign_sentence):
+                prob = self.translation_probabilities[target_token][source_token]*self.jump_counts[source_idx - int(target_idx*len_source/len_target)] 
                 if prob > best_prob:  # prefer newer word in case of tie
-                    best_align = f_idx + 1 
+                    best_align = source_idx + 1 
                     best_prob = prob
-            alignment.add((e_idx+1, best_align))
+            alignment.add((target_idx+1, best_align))
 
         return alignment

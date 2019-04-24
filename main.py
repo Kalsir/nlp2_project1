@@ -18,13 +18,13 @@ def get_flags():
     flags, unparsed = parser.parse_known_args()
     return flags
 
-def get_model(model: str, vocab_en: Set[str]):
+def get_model(model: str, vocab_target: Set[str]):
     if model == 'ibm2':
-        ibm_model = IBM2(vocab_en)
+        ibm_model = IBM2(vocab_target)
     if model == 'jump':
-        ibm_model = IBM2Jump(vocab_en)
+        ibm_model = IBM2Jump(vocab_target)
     else:
-        ibm_model = IBM1(vocab_en)
+        ibm_model = IBM1(vocab_target)
     return ibm_model
 
 def read_tokens(path: str, n:int=None) -> List[List[str]]:
@@ -38,11 +38,11 @@ def sentence_vocab(tokenized: List[List[str]]) -> Set[str]:
 
 def read_data(n:int=None):
     # Read in training data
-    tokenized_en = read_tokens('data/training/hansards.36.2.e', n)
-    tokenized_fr = read_tokens('data/training/hansards.36.2.f', n)
-    training_corpus = list(zip(tokenized_en, tokenized_fr))
-    vocab_en = sentence_vocab(tokenized_en)
-    print(f'vocabulary size english: {len(vocab_en)}')
+    tokenized_target = read_tokens('data/training/hansards.36.2.e', n)
+    tokenized_source = read_tokens('data/training/hansards.36.2.f', n)
+    training_corpus = list(zip(tokenized_target, tokenized_source))
+    vocab_target = sentence_vocab(tokenized_target)
+    print(f'vocabulary size english: {len(vocab_target)}')
 
     # Read in validation data
     validation_corpus = list(zip(
@@ -58,7 +58,7 @@ def read_data(n:int=None):
     ))
     test_gold = aer.read_naacl_alignments('data/testing/answers/test.wa.nonullalign')
 
-    return (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_en)
+    return (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target)
 
 def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations) -> None:
     # Print initial validation AER    
@@ -96,7 +96,7 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
         f.write('Iteration: ' + str(i+1) + ' Log-likelihood: ' + str(log_likelihoods[i]) + ' AER score: ' + str(aer_scores[i]) + '\n')
 
     # Create ibm2 model and train it
-    #ibm2_model = IBM2(vocab_en, ibm_model.translation_probabilities)
+    #ibm2_model = IBM2(vocab_target, ibm_model.translation_probabilities)
     #ibm2_model.train(training_corpus, 5, validation_corpus, validation_gold)
 
     # Print log-likelihood after training
@@ -105,10 +105,14 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
     # Print dictionary
     #ibm_model.print_dictionary()
 
+    set_trace()
+
+    # TODO: dump/load model probabilities
+
 def main():
     flags = get_flags()
-    (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_en) = read_data(flags.lines)
-    ibm_model = get_model(flags.model, vocab_en)
+    (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target) = read_data(flags.lines)
+    ibm_model = get_model(flags.model, vocab_target)
     test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, flags.iterations)
 
 if __name__ == '__main__':

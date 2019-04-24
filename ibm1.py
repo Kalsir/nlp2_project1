@@ -4,10 +4,10 @@ from aer import AERSufficientStatistics
 from tqdm import tqdm, trange
 
 class IBM1():
-    def __init__(self, vocab_en, translation_probabilities = None):
-        self.vocab_en = vocab_en        
+    def __init__(self, vocab_target, translation_probabilities = None):
+        self.vocab_target = vocab_target        
         if translation_probabilities is None:
-            default_probability = 1/len(vocab_en)
+            default_probability = 1/len(vocab_target)
             self.translation_probabilities = defaultdict(lambda: defaultdict(lambda: default_probability))
         else:
             self.translation_probabilities = translation_probabilities
@@ -19,24 +19,24 @@ class IBM1():
 
     def pair_log_likelihood(self, pair):
         # Expand sentence pair
-        english_sentence, foreign_sentence = pair
+        target_sentence, source_sentence = pair
 
         # Add null token
-        foreign_sentence = [None] + foreign_sentence
+        source_sentence = [None] + source_sentence
 
         # Calculate log_likelihood of pair
-        log_likelihood, _ = self.log_likelihood(english_sentence, foreign_sentence)
+        log_likelihood, _ = self.log_likelihood(target_sentence, source_sentence)
         return log_likelihood
 
-    # Calculate e-likelihoods and log-likelihood of sentence pair
-    def log_likelihood(self, english_sentence, foreign_sentence):    
-        log_likelihood = -math.log(len(foreign_sentence)**len(english_sentence))
-        e_likelihoods = defaultdict(lambda: 0)
-        for e in english_sentence:                
-            for f in foreign_sentence:
-                e_likelihoods[e] += self.translation_probabilities[e][f]
-            log_likelihood += math.log(e_likelihoods[e])
-        return (log_likelihood, e_likelihoods)
+    # Calculate target_token-likelihoods and log-likelihood of sentence pair
+    def log_likelihood(self, target_sentence, source_sentence):    
+        log_likelihood = -math.log(len(source_sentence)**len(target_sentence))
+        target_likelihoods = defaultdict(lambda: 0)
+        for target_token in target_sentence:                
+            for source_token in source_sentence:
+                target_likelihoods[target_token] += self.translation_probabilities[target_token][source_token]
+            log_likelihood += math.log(target_likelihoods[target_token])
+        return (log_likelihood, target_likelihoods)
 
     # Train model
     def train(self, training_corpus, iterations, validation_corpus, validation_gold):
@@ -44,33 +44,33 @@ class IBM1():
         aer_scores = []
 
         for i in trange(iterations, desc='iterations', position=0):
-            expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times e is connected to f 
-            expected_total = defaultdict(lambda: 0) # Expected total connections for f
+            expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times target_token is connected to source_token 
+            expected_total = defaultdict(lambda: 0) # Expected total connections for source_token
             total_log_likelihood = 0
 
             # Calculate expected counts (Expectation step) and log-likelihood
             for t in trange(len(training_corpus), desc='training_corpus', position=1):
                 # Expand sentence pair
-                english_sentence, foreign_sentence = training_corpus[t]
+                target_sentence, source_sentence = training_corpus[t]
 
                 # Add null token
-                foreign_sentence = [None] + foreign_sentence        
+                source_sentence = [None] + source_sentence        
 
-                # Calculate e-likelihoods and log-likelihood of sentence pair
-                log_likelihood, e_likelihoods = self.log_likelihood(english_sentence, foreign_sentence)
+                # Calculate target_token-likelihoods and log-likelihood of sentence pair
+                log_likelihood, target_likelihoods = self.log_likelihood(target_sentence, source_sentence)
                 total_log_likelihood += log_likelihood
 
                 # Collect counts
-                for e in english_sentence:
-                    for f in foreign_sentence:
-                        normalized_count = self.translation_probabilities[e][f]/e_likelihoods[e]
-                        expected_count[e][f] += normalized_count
-                        expected_total[f] += normalized_count
+                for target_token in target_sentence:
+                    for source_token in source_sentence:
+                        normalized_count = self.translation_probabilities[target_token][source_token]/target_likelihoods[target_token]
+                        expected_count[target_token][source_token] += normalized_count
+                        expected_total[source_token] += normalized_count
 
             # Update translation probabilities (Maximization step)
-            for e in expected_count.keys():
-                for f in expected_count[e].keys():
-                    self.translation_probabilities[e][f] = expected_count[e][f]/expected_total[f]
+            for target_token in expected_count.keys():
+                for source_token in expected_count[target_token].keys():
+                    self.translation_probabilities[target_token][source_token] = expected_count[target_token][source_token]/expected_total[source_token]
 
             print('\nIteration', i+1, 'complete')
             print('Log-likelihood before:', total_log_likelihood)
@@ -82,31 +82,31 @@ class IBM1():
 
     # Print most likely translation for each foreign word
     def print_dictionary(self):
-        for e in self.vocab_en:
-            probs = self.translation_probabilities[e]
-            print(e, max(zip(probs.values(), probs.keys())))
+        for target_token in self.vocab_target:
+            probs = self.translation_probabilities[target_token]
+            print(target_token, max(zip(probs.values(), probs.keys())))
 
     # Find best alignment for a sentence pair
     def align(self, pair):
         # Expand sentence pair
-        english_sentence, foreign_sentence = pair
+        target_sentence, source_sentence = pair
 
         # Initialize alignment
         alignment = set()
 
         # Add best link for every english word
-        for e_idx, e in enumerate(english_sentence):
+        for target_idx, target_token in enumerate(target_sentence):
             # Default alignment with null token
             best_align = None
-            best_prob = self.translation_probabilities[e][None]     
+            best_prob = self.translation_probabilities[target_token][None]     
 
             # Check alignments with all other possible words
-            for f_idx, f in enumerate(foreign_sentence):
-                prob = self.translation_probabilities[e][f] 
+            for source_idx, source_token in enumerate(source_sentence):
+                prob = self.translation_probabilities[target_token][source_token] 
                 if prob > best_prob:  # prefer newer word in case of tie
-                    best_align = f_idx + 1 
+                    best_align = source_idx + 1 
                     best_prob = prob
-            alignment.add((e_idx+1, best_align))
+            alignment.add((target_idx+1, best_align))
 
         return alignment
 
