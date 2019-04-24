@@ -24,7 +24,7 @@ def get_flags():
 def get_model(model: str, vocab_target: Set[str], probabilities: DefaultDict[str, DefaultDict[str, int]]):
     if model == 'ibm2':
         ibm_model = IBM2(vocab_target, probabilities)
-    if model == 'jump':
+    elif model == 'jump':
         ibm_model = IBM2Jump(vocab_target, probabilities)
     else:
         ibm_model = IBM1(vocab_target, probabilities)
