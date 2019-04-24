@@ -69,7 +69,7 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
 
     # Train the model
     log_likelihoods, aer_scores = ibm_model.train(training_corpus, iterations, test_corpus, test_gold)
-    #aer_scores = [initial_aer] + aer_scores
+    # aer_scores = [initial_aer] + aer_scores
 
     # Print log-likelihood after training
     final_log_likelihood = ibm_model.total_log_likelihood(training_corpus)
@@ -97,15 +97,8 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
     for i in tqdm(range(iterations), desc='writing'):
         f.write('Iteration: ' + str(i+1) + ' Log-likelihood: ' + str(log_likelihoods[i]) + ' AER score: ' + str(aer_scores[i]) + '\n')
 
-    # Create ibm2 model and train it
-    #ibm2_model = IBM2(vocab_target, ibm_model.translation_probabilities)
-    #ibm2_model.train(training_corpus, 5, validation_corpus, validation_gold)
-
-    # Print log-likelihood after training
-    #print('\nFinal log-likelihood:', ibm2_model.total_log_likelihood(training_corpus))
-
-    # Print dictionary
-    #ibm_model.print_dictionary()
+    # # Print dictionary
+    # ibm_model.print_dictionary()
 
 def main():
     flags = get_flags()
