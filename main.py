@@ -2,6 +2,7 @@ from collections import defaultdict
 import argparse
 import itertools
 from typing import Tuple, List, Set, Dict, DefaultDict
+from operator import itemgetter
 import matplotlib.pyplot as plt
 import aer
 from tqdm import tqdm, trange
@@ -105,19 +106,20 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
 
 def main():
     flags = get_flags()
-    (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target) = read_data(flags.lines)
+    flag_keys = ['model', 'lines', 'iterations', 'probabilities']
+    (model, lines, iterations, probabilities) = itemgetter(*flag_keys)(vars(flags))
+
+    (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target) = read_data(lines)
 
     # optionally load in previously trained probabilities
-    probabilities = None
-    prob_f = flags.probabilities
-    if prob_f:
-        with open(prob_f, 'rb') as f:
-            probabilities = pickle.load(f)
+    if probabilities:
+        with open(probabilities, 'rb') as f:
+            translation_probabilities = pickle.load(f)
 
-    ibm_model = get_model(flags.model, vocab_target, probabilities)
-    with open(f'{flags.model}.pkl', 'wb') as f:
+    ibm_model = get_model(model, vocab_target, translation_probabilities)
+    with open(f'{model}.pkl', 'wb') as f:
         pickle.dump(ibm_model.translation_probabilities, f)
-    test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, flags.iterations)
+    test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations)
 
 if __name__ == '__main__':
     main()
