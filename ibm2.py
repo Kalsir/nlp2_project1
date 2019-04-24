@@ -10,21 +10,21 @@ class AlignmentProbabilities():
     def __init__(self):
         self.alignment_probabilities = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: dict())))
 
-    def read(self, len_target, len_source, target_idx, source_idx):
+    def read(self, len_target: int, len_source: int, target_idx: int, source_idx: int):
         if source_idx not in self.alignment_probabilities[len_target][len_source][target_idx]:
             self.alignment_probabilities[len_target][len_source][target_idx][source_idx] = 1/10
         return self.alignment_probabilities[len_target][len_source][target_idx][source_idx]
 
-    def write(self, len_target, len_source, target_idx, source_idx, value):
+    def write(self, len_target: int, len_source: int, target_idx: int, source_idx: int, value: float):
         self.alignment_probabilities[len_target][len_source][target_idx][source_idx] = value
 
 class IBM2(IBM1):
-    def __init__(self, vocab_target, translation_probabilities = None):
+    def __init__(self, vocab_target: Set[str], translation_probabilities: DefaultDict[str, DefaultDict[str, int]] = None):
         super(IBM2, self).__init__(vocab_target, translation_probabilities)
         self.alignment_probabilities = AlignmentProbabilities()
 
-    # Calculate target_token likelihoods and log-likelihood of sentence pair
-    def log_likelihood(self, target_sentence, foreign_sentence):    
+    def log_likelihood(self, target_sentence: List[str], foreign_sentence: List[str]) -> Tuple[float, List[float]]:
+        """Calculate target_token likelihoods and log-likelihood of sentence pair"""
         len_target = len(target_sentence)
         len_source = len(foreign_sentence)
         log_likelihood = 0
@@ -37,8 +37,8 @@ class IBM2(IBM1):
             log_likelihood += math.log(target_likelihoods[target_token])
         return (log_likelihood, target_likelihoods)
 
-    # Train model
-    def train(self, training_corpus, iterations, validation_corpus, validation_gold):
+    def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[int, int]]]) -> Tuple[List[int], List[int]]:
+        """Train model"""
         total_log_likelihoods = []
         aer_scores = []
         with SummaryWriter(self.__class__.__name__) as w:
@@ -105,8 +105,8 @@ class IBM2(IBM1):
         return (total_log_likelihoods, aer_scores)
 
 
-    # Find best alignment for a sentence pair
-    def align(self, pair):
+    def align(self, pair: Tuple[str, str]) -> Set[Tuple[int, int]]:
+        """Find best alignment for a sentence pair"""
         # Expand sentence pair
         target_sentence, foreign_sentence = pair
         len_target = len(target_sentence)

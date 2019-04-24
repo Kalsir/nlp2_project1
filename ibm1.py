@@ -1,13 +1,15 @@
-from typing import Tuple, List, Set, Dict, Any
+from typing import Tuple, List, Set, Dict, Any, DefaultDict
 from collections import defaultdict
 import math
 from aer import AERSufficientStatistics
 from tqdm import tqdm, trange
 import yaml
 from tensorboardX import SummaryWriter
+from functools import reduce
+import numpy as np
 
 class IBM1():
-    def __init__(self, vocab_target, translation_probabilities = None):
+    def __init__(self, vocab_target: Set[str], translation_probabilities: DefaultDict[str, DefaultDict[str, int]] = None):
         self.vocab_target = vocab_target        
         if translation_probabilities is None:
             default_probability = 1/len(vocab_target)
@@ -15,12 +17,12 @@ class IBM1():
         else:
             self.translation_probabilities = translation_probabilities
 
-    # Calculate log-likelihood of entire corpus
-    def total_log_likelihood(self, corpus):
+    def total_log_likelihood(self, corpus: List[Tuple[str, str]]) -> int:
+        """Calculate log-likelihood of entire corpus"""
         print('\nCalculating log-likelihood')
         return sum(map(self.pair_log_likelihood, tqdm(corpus, desc='corpus')))
 
-    def pair_log_likelihood(self, pair):
+    def pair_log_likelihood(self, pair: Tuple[str, str]) -> int:
         # Expand sentence pair
         target_sentence, source_sentence = pair
 
@@ -31,8 +33,8 @@ class IBM1():
         log_likelihood, _ = self.log_likelihood(target_sentence, source_sentence)
         return log_likelihood
 
-    # Calculate target_token-likelihoods and log-likelihood of sentence pair
-    def log_likelihood(self, target_sentence, source_sentence):    
+    def log_likelihood(self, target_sentence: str, source_sentence: str) -> int:    
+        """Calculate target_token-likelihoods and log-likelihood of sentence pair"""
         log_likelihood = -math.log(len(source_sentence)**len(target_sentence))
         target_likelihoods = defaultdict(lambda: 0)
         for target_token in target_sentence:                
@@ -41,8 +43,8 @@ class IBM1():
             log_likelihood += math.log(target_likelihoods[target_token])
         return (log_likelihood, target_likelihoods)
 
-    # Train model
-    def train(self, training_corpus, iterations, validation_corpus, validation_gold):
+    def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[int, int]]]) -> Tuple[List[int], List[int]]:
+        """Train model"""
         total_log_likelihoods = []
         aer_scores = []
 
@@ -89,14 +91,14 @@ class IBM1():
                 aer_scores.append(aer)
         return (total_log_likelihoods, aer_scores)
 
-    # Print most likely translation for each foreign word
-    def print_dictionary(self):
+    def print_dictionary(self) -> None:
+        """Print most likely translation for each foreign word"""
         for target_token in self.vocab_target:
             probs = self.translation_probabilities[target_token]
             print(target_token, max(zip(probs.values(), probs.keys())))
 
-    # Find best alignment for a sentence pair
-    def align(self, pair):
+    def align(self, pair: Tuple[str, str]) -> Set[Tuple[int, int]]:
+        """Find best alignment for a sentence pair"""
         # Expand sentence pair
         target_sentence, source_sentence = pair
 
@@ -119,8 +121,8 @@ class IBM1():
 
         return alignment
 
-    # Calculate AER on validation corpus using gold standard
-    def calculate_aer(self, validation_corpus, validation_gold):
+    def calculate_aer(self, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[int, int]]]):
+        """Calculate AER on validation corpus using gold standard"""
         # Compute predictions
         predictions = []
         for pair in validation_corpus:

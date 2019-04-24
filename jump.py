@@ -11,8 +11,8 @@ class IBM2Jump(IBM1):
         super(IBM2Jump, self).__init__(english_vocab, translation_probabilities)
         self.jump_counts = defaultdict(lambda: 1)
 
-    # Calculate target_token likelihoods and log-likelihood of sentence pair
-    def log_likelihood(self, target_sentence, foreign_sentence):    
+    def log_likelihood(self, target_sentence: List[str], foreign_sentence: List[str]) -> Tuple[float, List[float]]:
+        """Calculate target_token likelihoods and log-likelihood of sentence pair"""
         len_target = len(target_sentence)
         len_source = len(foreign_sentence)
         log_likelihood = 0
@@ -29,8 +29,8 @@ class IBM2Jump(IBM1):
             log_likelihood += math.log(target_likelihoods[target_token])
         return (log_likelihood, target_likelihoods)
 
-    # Train model
-    def train(self, training_corpus, iterations, validation_corpus, validation_gold):
+    def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[int, int]]]) -> Tuple[List[int], List[int]]:
+        """Train model"""
         total_log_likelihoods = []
         aer_scores = []
         with SummaryWriter(self.__class__.__name__) as w:
@@ -88,8 +88,8 @@ class IBM2Jump(IBM1):
                 aer_scores.append(aer)
         return (total_log_likelihoods, aer_scores)
 
-    # Find best alignment for a sentence pair
-    def align(self, pair):
+    def align(self, pair: Tuple[str, str]) -> Set[Tuple[int, int]]:
+        """Find best alignment for a sentence pair"""
         # Expand sentence pair
         target_sentence, foreign_sentence = pair
         len_target = len(target_sentence)
