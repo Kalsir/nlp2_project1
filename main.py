@@ -1,14 +1,16 @@
 from collections import defaultdict
-import math
-import aer
-import matplotlib.pyplot as plt
 import sys
+import math
+import itertools
+from typing import Tuple, List, Set, Dict
+import matplotlib.pyplot as plt
+import aer
 
 class IBM1():
-	def __init__(self, english_vocab, translation_probabilities = None):
-		self.english_vocab = english_vocab		
+	def __init__(self, vocab_en, translation_probabilities = None):
+		self.vocab_en = vocab_en		
 		if translation_probabilities is None:
-			default_probability = 1/len(english_vocab)
+			default_probability = 1/len(vocab_en)
 			self.translation_probabilities = defaultdict(lambda: defaultdict(lambda: default_probability))
 		else:
 			self.translation_probabilities = translation_probabilities
@@ -92,7 +94,7 @@ class IBM1():
 
 	# Print most likely translation for each foreign word
 	def print_dictionary(self):
-		for e in self.english_vocab:
+		for e in self.vocab_en:
 			probs = self.translation_probabilities[e]
 			print(e, max(zip(probs.values(), probs.keys())))
 
@@ -146,8 +148,8 @@ class AlignmentProbabilities():
 		self.alignment_probabilities[len_e][len_f][e_idx][f_idx] = value
 
 class IBM2(IBM1):
-	def __init__(self, english_vocab, translation_probabilities = None):
-		super(IBM2, self).__init__(english_vocab, translation_probabilities)
+	def __init__(self, vocab_en, translation_probabilities = None):
+		super(IBM2, self).__init__(vocab_en, translation_probabilities)
 		self.alignment_probabilities = AlignmentProbabilities()
 
 	# Calculate e-likelihoods and log-likelihood of sentence pair
@@ -257,8 +259,8 @@ class IBM2(IBM1):
 
 # Incorrect version of IBM2Jump
 '''class IBM2Jump(IBM1):
-	def __init__(self, english_vocab, translation_probabilities = None):
-		super(IBM2Jump, self).__init__(english_vocab, translation_probabilities)
+	def __init__(self, vocab_en, translation_probabilities = None):
+		super(IBM2Jump, self).__init__(vocab_en, translation_probabilities)
 		self.jump_counts = defaultdict(lambda: 1)
 
 	# Calculate e-likelihoods and log-likelihood of sentence pair
@@ -354,46 +356,41 @@ class IBM2(IBM1):
 		return alignment
 '''
 
+def read_tokens(path: str, n:int=None) -> List[List[str]]:
+	sentences = open(path, 'r', encoding='utf8').readlines()
+	sentences_ = itertools.islice(sentences, n)
+	# we split on spaces as the hansards dataset uses explicit spacing between tokens
+	return [sentence.split(' ')[:-1] for sentence in sentences_]
+
+def sentence_vocab(tokenized: List[List[str]]) -> Set[str]:
+	return set([token for tokens in tokenized for token in tokens])
+
 def main():
 	# Read in training data
-	training_e = open("data/training/hansards.36.2.e", "r", encoding="utf8")
-	training_f = open("data/training/hansards.36.2.f", "r", encoding="utf8")
-	training_corpus = []
-	english_vocab = set()
-	foreign_vocab = set()
-	for _ in range(231164): # Hardcoded so I can vary training set size and dont have to count lines in the file (max 231164)
-		english_sentence = training_e.readline().split(" ")[:-1]
-		for word in english_sentence:
-			english_vocab.add(word)
-		foreign_sentence = training_f.readline().split(" ")[:-1]
-		for word in foreign_sentence:
-			foreign_vocab.add(word)
-		training_corpus.append((english_sentence, foreign_sentence))
-	print("English vocabulary size:", len(english_vocab))
-	print("Foreign vocabulary size:", len(foreign_vocab))
+	tokenized_en = read_tokens('data/training/hansards.36.2.e')
+	tokenized_fr = read_tokens('data/training/hansards.36.2.f')
+	training_corpus = list(zip(tokenized_en, tokenized_fr))
+	vocab_en = sentence_vocab(tokenized_en)
+	vocab_fr = sentence_vocab(tokenized_fr)
+	print(f'vocabulary size english: {len(vocab_en)}')
+	print(f'vocabulary size french:  {len(vocab_fr)}')
 
 	# Read in validation data
-	validation_e = open("data/validation/dev.e", "r", encoding="utf8")
-	validation_f = open("data/validation/dev.f", "r", encoding="utf8")
-	validation_corpus = []
-	for line in validation_e: 
-		english_sentence = line.split(" ")[:-1]
-		foreign_sentence = validation_f.readline().split(" ")[:-1]
-		validation_corpus.append((english_sentence, foreign_sentence))
+	validation_corpus = list(zip(
+		read_tokens('data/validation/dev.e'),
+		read_tokens('data/validation/dev.f'),
+	))
 	validation_gold = aer.read_naacl_alignments("data/validation/dev.wa.nonullalign")
 
 	# Read in test data
-	test_e = open("data/testing/test/test.e", "r", encoding="utf8")
-	test_f = open("data/testing/test/test.f", "r", encoding="utf8")
-	test_corpus = []
-	for line in test_e: 
-		english_sentence = line.split(" ")[:-1]
-		foreign_sentence = test_f.readline().split(" ")[:-1]
-		test_corpus.append((english_sentence, foreign_sentence))
+	test_corpus = list(zip(
+		read_tokens('data/testing/test/test.e'),
+		read_tokens('data/testing/test/test.f'),
+	))
 	test_gold = aer.read_naacl_alignments("data/testing/answers/test.wa.nonullalign")
 
 	# Create ibm1 model
-	ibm1_model = IBM1(english_vocab)
+	ibm1_model = IBM1(vocab_en)
 
 	# Print initial validation AER	
 	initial_aer = ibm1_model.calculate_aer(validation_corpus, validation_gold)
@@ -430,7 +427,7 @@ def main():
 		f.write("Iteration: " + str(i+1) + " Log-likelihood: " + str(log_likelihoods[i]) + " AER score: " + str(aer_scores[i]) + "\n")
 
 	# Create ibm2 model and train it
-	#ibm2_model = IBM2(english_vocab, ibm1_model.translation_probabilities)
+	#ibm2_model = IBM2(vocab_en, ibm1_model.translation_probabilities)
 	#ibm2_model.train(training_corpus, 5, validation_corpus, validation_gold)
 
 	# Print log-likelihood after training
