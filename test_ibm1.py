@@ -11,11 +11,11 @@ def test_ctor():
 
 def test_total_log_likelihood():
     model = get_model()
-    assert model.total_log_likelihood([sentence_pair]) == -1.3862943611198904
+    assert model.total_log_likelihood([sentence_pair]) == -1.3862943611198906
 
 def test_pair_log_likelihood():
     model = get_model()
-    assert model.pair_log_likelihood( sentence_pair) == -1.3862943611198904
+    assert model.pair_log_likelihood( sentence_pair) == -1.3862943611198906
 
 def test_log_likelihood():
     model = get_model()

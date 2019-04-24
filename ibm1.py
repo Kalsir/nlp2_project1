@@ -35,12 +35,11 @@ class IBM1():
 
     def log_likelihood(self, target_sentence: List[str], source_sentence: List[str]) -> int:    
         """Calculate target_token-likelihoods and log-likelihood of sentence pair"""
-        log_likelihood = -math.log(len(source_sentence)**len(target_sentence))
-        target_likelihoods = defaultdict(lambda: 0)
-        for target_token in target_sentence:                
-            for source_token in source_sentence:
-                target_likelihoods[target_token] += self.translation_probabilities[target_token][source_token]
-            log_likelihood += math.log(target_likelihoods[target_token])
+        target_likelihoods = defaultdict(lambda: 0, {target_token: sum([
+                self.translation_probabilities[target_token][source_token]
+            for source_token in source_sentence]) for target_token in target_sentence})
+        log_likelihood = -math.log(len(source_sentence)**len(target_sentence)) + \
+            sum(map(math.log, target_likelihoods.values()))
         return (log_likelihood, target_likelihoods)
 
     def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]]) -> Tuple[List[int], List[int]]:
@@ -123,13 +122,11 @@ class IBM1():
 
     def calculate_aer(self, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]]) -> float:
         """Calculate AER on validation corpus using gold standard"""
-        # Compute predictions
-        predictions = []
-        for pair in validation_corpus:
-            predictions.append(self.align(pair))
+        predictions = map(self.align, validation_corpus)
 
         # Compute AER
         metric = AERSufficientStatistics()
         for gold, pred in zip(validation_gold, predictions):
-            metric.update(sure=gold[0], probable=gold[1], predicted=pred)
+            (sure, probable) = gold
+            metric.update(sure=sure, probable=probable, predicted=pred)
         return metric.aer()
