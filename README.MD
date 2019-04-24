@@ -5,6 +5,8 @@
 ```bash
 pip install -r requirements.txt
 python main.m
+docker build -t ibm .
+docker run --rm -ti -v $PWD:/app ibm
 ```
 
 ## Roadmap
