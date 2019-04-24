@@ -1,4 +1,6 @@
 dill==0.2.9
 matplotlib==3.1.0rc1
 pytest==4.2.1
+pyyaml==5.1
 tqdm==4.31.1
+tensorboardx==1.6
