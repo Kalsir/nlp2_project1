@@ -114,7 +114,7 @@ class IBM1():
             # Check alignments with all other possible words
             for source_idx, source_token in enumerate(source_sentence):
                 prob = self.translation_probabilities[target_token][source_token] 
-                if prob > best_prob:  # prefer newer word in case of tie
+                if prob >= best_prob:  # prefer newer word in case of tie
                     best_align = source_idx + 1 
                     best_prob = prob
             alignment.add((target_idx+1, best_align))
