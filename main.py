@@ -64,7 +64,8 @@ def read_data(n:int=None):
     return (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target)
 
 def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations) -> None:
-    # Print initial validation AER    
+    name = ibm_model.__class__.__name__
+    # Print initial validation AER
     initial_aer = ibm_model.calculate_aer(validation_corpus, validation_gold)
     print('Initial validation AER:', initial_aer)
 
@@ -81,23 +82,28 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
     xs = list(range(1, iterations+1))
     # TODO: tensorboard?
     stats = {
-        'Log-likelihood': log_likelihoods,
-        'AER Score': aer_scores,
+        'logp': log_likelihoods,
+        'aer': aer_scores,
+    }
+    labels = {
+        'logp': 'Log-likelihood',
+        'aer': 'AER Score',
     }
     # Plot log-likelihood and aer curves
-    for i, (label, ys) in enumerate(stats.items()):
+    for i, (k, ys) in enumerate(stats.items()):
         # TODO: seaborn?
-        print('test')
-        name = 'log_likelihoods.png' if i==0 else 'aer_scores.png'
+        label = labels[k]
+        png_file = f'{k}_{name}.png'
         fig = plt.figure()
         plt.plot(xs, ys)
         plt.xlabel('Iterations')
         plt.ylabel(label)
-        plt.savefig(name)
+        plt.savefig(png_file)
         plt.close(fig)
 
     # TODO: df.to_csv?
-    f = open('run_log.txt','w+')
+    log_file = f'run_log_{name}.txt'
+    f = open(log_file,'w+')
     for i in tqdm(range(iterations), desc='writing'):
         f.write('Iteration: ' + str(i+1) + ' Log-likelihood: ' + str(log_likelihoods[i]) + ' AER score: ' + str(aer_scores[i]) + '\n')
 
@@ -115,6 +121,8 @@ def main():
     if probabilities:
         with open(probabilities, 'rb') as f:
             translation_probabilities = pickle.load(f)
+    else:
+        translation_probabilities = defaultdict(lambda: defaultdict(lambda: 1/len(vocab_target)))
 
     ibm_model = get_model(model, vocab_target, translation_probabilities)
     with open(f'{model}.pkl', 'wb') as f:

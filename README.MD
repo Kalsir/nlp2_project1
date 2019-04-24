@@ -16,10 +16,10 @@ http://127.0.0.1:6006/
 ### IBM model 1
 - [ ] Implement IBM model 1
     - 1.
-        - [ ] a) Implement EM training (Brown et al., 1993) for IBM model 1;
+        - [x] a) Implement EM training (Brown et al., 1993) for IBM model 1;
         - [ ] b) All of the tasks below should be performed for both models.
-    - [ ] 2. Plot the evolution of training log likelihood as a function of the iteration.
-    - [ ] 3. Plot the evolution of alignment error rate (AER) on validation data as a function of the iteration;
+    - [x] 2. Plot the evolution of training log likelihood as a function of the iteration.
+    - [x] 3. Plot the evolution of alignment error rate (AER) on validation data as a function of the iteration;
     - [ ] 4. Experiment with two criteria for model selection (i.e. deciding on number of training iterations):
         - [ ] 1) convergence in terms of training log likelihood;
         - [ ] 2) best AER on validation data;

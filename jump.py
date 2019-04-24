@@ -79,8 +79,8 @@ class IBM2Jump(IBM1):
 
                 aer = self.calculate_aer(validation_corpus, validation_gold)
                 stats = {
-                    'Log-likelihood before': total_log_likelihood,
-                    'Validation AER after': aer,
+                    'logp': total_log_likelihood,
+                    'aer': aer,
                 }
                 print(yaml.dump(stats))
                 w.add_scalars('metrics', stats, i)
