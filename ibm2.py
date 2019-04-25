@@ -103,7 +103,7 @@ class IBM2(IBM1):
                 }
                 print(yaml.dump(stats))
                 w.add_scalars('metrics', stats, i)
-                total_log_likelihoods.append(total_log_likelihood)
+                total_log_likelihoods.append(total_log_likelihood/len(training_corpus))
                 aer_scores.append(aer)
         return (total_log_likelihoods, aer_scores)
 
