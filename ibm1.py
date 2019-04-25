@@ -110,9 +110,14 @@ class IBM1():
 
     def best_align(self, target_sentence: List[str], source_token: str) -> int:
         """Find best alignment for a target token from a source sentence"""
-        probs = map(lambda target_token: self.translation_probabilities[source_token][target_token], target_sentence)
+        probs = list(map(lambda target_token: self.translation_probabilities[source_token][target_token], target_sentence))
         # np.argmax errors on empty list
-        return np.argmax(list(reversed(probs))) if probs else None
+        if probs:
+            # reversed to avoid getting None (first item) on tie-breakers...
+            # this could probably be simplified if we could get argmax behavior preferring later items in a tie
+            return len(probs) - 1 - np.argmax(list(reversed(probs)))
+        else:
+            return None
 
     def calculate_aer(self, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]]) -> float:
         """Calculate AER on validation corpus using gold standard"""
