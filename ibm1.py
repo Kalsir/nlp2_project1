@@ -15,6 +15,7 @@ class IBM1():
         n = len(vocab_target)
         if translation_probabilities is None:
             if sampling_method == 'random':
+                np.random.seed(42)
                 a = np.random.rand(n)
                 self.translation_probabilities = a / np.sum(a)
             else:
