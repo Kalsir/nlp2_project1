@@ -1,4 +1,4 @@
-from collections.abc import defaultdict
+from collections import defaultdict
 import argparse
 import itertools
 from typing import Tuple, List, Set, Dict, DefaultDict
