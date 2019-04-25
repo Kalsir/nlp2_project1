@@ -7,10 +7,11 @@ import matplotlib.pyplot as plt
 import aer
 from tqdm import tqdm, trange
 from pdb import set_trace
-from ibm1 import IBM1
+# from ibm1 import IBM1
 from ibm2 import IBM2
 from jump import IBM2Jump
 import dill as pickle
+from model import *
 
 def get_flags():
     parser = argparse.ArgumentParser()
@@ -21,13 +22,13 @@ def get_flags():
     flags, unparsed = parser.parse_known_args()
     return flags
 
-def get_model(model: str, vocab_target: Set[str], probabilities: DefaultDict[str, DefaultDict[str, int]]):
-    if model == 'ibm2':
-        ibm_model = IBM2(vocab_target, probabilities)
-    elif model == 'jump':
-        ibm_model = IBM2Jump(vocab_target, probabilities)
-    else:
-        ibm_model = IBM1(vocab_target, probabilities)
+def get_model(model: str):
+    # if model == 'ibm2':
+    #     ibm_model = IBM2(vocab_target, probabilities)
+    # elif model == 'jump':
+    #     ibm_model = IBM2Jump(vocab_target, probabilities)
+    # else:
+    ibm_model = IBM1()
     return ibm_model
 
 def read_tokens(path: str, n:int=None) -> List[List[str]]:
@@ -63,19 +64,19 @@ def read_data(n:int=None):
 
     return (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target)
 
-def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations) -> None:
+def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations, data) -> None:
     name = ibm_model.__class__.__name__
     # Print initial validation AER
-    initial_aer = ibm_model.calculate_aer(validation_corpus, validation_gold)
+    initial_aer = calculate_aer(validation_corpus, validation_gold, data.translation_probabilities, ibm_model)
     print('Initial validation AER:', initial_aer)
 
     # Train the model
-    log_likelihoods, aer_scores = ibm_model.train(training_corpus, iterations, test_corpus, test_gold)
+    log_likelihoods, aer_scores = ibm_model.train(data, training_corpus, iterations, test_corpus, test_gold)
     # aer_scores = [initial_aer] + aer_scores
 
     # Print log-likelihood after training
     # final_log_likelihood = ibm_model.total_log_likelihood(training_corpus)
-    final_log_likelihood = ibm_model.total_log_likelihood(training_corpus)/len(training_corpus)
+    final_log_likelihood = total_log_likelihood(training_corpus, ibm_model, data)/len(training_corpus)
     print('\nFinal log-likelihood:', final_log_likelihood)
     # TODO: have train() return the log likelihoods from after the iteration as well?
     log_likelihoods = [*log_likelihoods[1:], final_log_likelihood]
@@ -124,10 +125,12 @@ def main():
     else:
         translation_probabilities = defaultdict(lambda: defaultdict(lambda: 1/len(vocab_target)))
 
-    ibm_model = get_model(model, vocab_target, translation_probabilities)
+    ibm_model = get_model(model) # , vocab_target, translation_probabilities)
+    data = ibm_model.make_data(vocab_target, translation_probabilities)
+
     with open(f'{model}.pkl', 'wb') as f:
-        pickle.dump(ibm_model.translation_probabilities, f)
-    test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations)
+        pickle.dump(data.translation_probabilities, f)
+    test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations, data)
 
 if __name__ == '__main__':
     main()

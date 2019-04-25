@@ -19,7 +19,7 @@ class ModelData():
 # @dataclass(frozen=True)
 # class IBMModel():
 #     """IBM model, implementing the required methods"""
-#     # train(model: ModelData, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]], log_likelihood_fn: Callable[[ModelData, str, str], int]) -> Tuple[List[int], List[int]]
+#     # train(model: ModelData, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]]) -> Tuple[List[int], List[int]]
 #     train: Callable[[ModelData, List[Tuple[str, str]], int, List[Tuple[str, str]], List[List[Tuple[Set[int], Set[int]]]], Callable[[ModelData, str, str], int]], Tuple[List[int], List[int]]]
 #     # align(target_sentence: str, source_sentence: str, translation_probabilities: DefaultDict[str, DefaultDict[str, int]]) -> Set[Tuple[int, int]]
 #     align: Callable[[str, str, DefaultDict[str, DefaultDict[str, int]]], Set[Tuple[int, int]]]
@@ -29,7 +29,7 @@ class ModelData():
 class IBMModel():
     """IBM model, implementing the required methods"""
 
-    def train(self, model: ModelData, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]], log_likelihood_fn: Callable[[ModelData, str, str], int]) -> Tuple[List[int], List[int]]:
+    def train(self, model: ModelData, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]]) -> Tuple[List[int], List[int]]:
         raise NotImplementedError
 
     def align(self, target_sentence: str, source_sentence: str, translation_probabilities: DefaultDict[str, DefaultDict[str, int]]) -> Set[Tuple[int, int]]:
