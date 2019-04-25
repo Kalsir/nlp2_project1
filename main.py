@@ -14,10 +14,10 @@ import dill as pickle
 
 def get_flags():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type = str, default = 'ibm2', help='model, ibm1 (default), ibm2, jump')
+    parser.add_argument('--model', type = str, default = 'ibm1', help='model, ibm1 (default), ibm2, jump')
     parser.add_argument('--lines', type = int, default = None, help='number of lines of training data to use, default all')
-    parser.add_argument('--iterations', type = int, default = 5, help='number of iterations, default 15')
-    parser.add_argument('--probabilities', type = str, default = "ibm1-uniform.pkl", help='file to load previously trained probabilities from (default none)')
+    parser.add_argument('--iterations', type = int, default = 10, help='number of iterations, default 15')
+    parser.add_argument('--probabilities', type = str, default = None, help='file to load previously trained probabilities from (default none)')
     parser.add_argument('--sampling_method', type = str, default = 'uniform', help='sampling method for initial probabilities: uniform (default), random')
     flags, unparsed = parser.parse_known_args()
     return flags
