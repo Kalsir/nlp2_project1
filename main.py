@@ -75,7 +75,7 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
 
     # Print log-likelihood after training
     # final_log_likelihood = ibm_model.total_log_likelihood(training_corpus)
-    final_log_likelihood = ibm_model.total_log_likelihood(training_corpus)/len(training_corpus)
+    final_log_likelihood = ibm_model.total_log_likelihood(training_corpus) # Added dividing in ibm2 model itself /len(training_corpus)
     print('\nFinal log-likelihood:', final_log_likelihood)
     # TODO: have train() return the log likelihoods from after the iteration as well?
     log_likelihoods = [*log_likelihoods[1:], final_log_likelihood]
