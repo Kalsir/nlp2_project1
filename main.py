@@ -113,6 +113,7 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
     # ibm_model.print_dictionary()
 
 def main():
+    np.seed(42)
     flags = get_flags()
     flag_keys = ['model', 'lines', 'iterations', 'probabilities', 'sampling_method']
     (model, lines, iterations, probabilities, sampling_method) = itemgetter(*flag_keys)(vars(flags))

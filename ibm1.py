@@ -109,18 +109,16 @@ class IBM1():
     def align(self, pair: Tuple[str, str]) -> Set[Tuple[int, int]]:
         """Find best alignment for a sentence pair"""
         target_sentence, source_sentence = pair
-        aligns = map(lambda source_token: self.best_align(target_sentence, source_token), source_sentence)
+        aligns = map(lambda target_token: self.best_align(source_sentence, target_token), target_sentence)
         # 1-indexed because AER is into that...
-        return set(map(lambda k_v: (k_v[0]+1, k_v[1]+1 if k_v[1] else None), enumerate(aligns)))
+        return set(map(lambda k_v: (k_v[1]+1, k_v[0]+1 if k_v[1] else None), enumerate(aligns)))
 
-    def best_align(self, target_sentence: List[str], source_token: str) -> int:
+    def best_align(self, source_sentence: List[str], target_token: str) -> int:
         """Find best alignment for a target token from a source sentence"""
-        probs = list(map(lambda target_token: self.translation_probabilities[source_token][target_token], target_sentence))
+        probs = list(map(lambda source_token: self.translation_probabilities[target_token][source_token], source_sentence))
         # np.argmax errors on empty list
         if probs:
-            # reversed to avoid getting None (first item) on tie-breakers...
-            # this could probably be simplified if we could get argmax behavior preferring later items in a tie
-            return len(probs) - 1 - np.argmax(list(reversed(probs)))
+            return np.argmax(probs)
         else:
             return None
 
