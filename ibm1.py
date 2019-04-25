@@ -112,7 +112,7 @@ class IBM1():
         """Find best alignment for a target token from a source sentence"""
         probs = map(lambda target_token: self.translation_probabilities[source_token][target_token], target_sentence)
         # np.argmax errors on empty list
-        return np.argmax(probs) if probs else None
+        return np.argmax(reversed(probs)) if probs else None
 
     def calculate_aer(self, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]]) -> float:
         """Calculate AER on validation corpus using gold standard"""
