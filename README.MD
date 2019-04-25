@@ -81,4 +81,4 @@ Your report will be assessed according to the following evaluation criteria:
     - [ ] use of tables/figures/plots,
     - [ ] command of English.
 - [ ] 5. Extra (max 1 point).
-    - [ ] neuralibm notebook which we can do as extra
+    - [ ] [neuralibm notebook](https://uva-slpl.github.io/nlp2/resources/project_ibm/neuralibm.tar.gz) which we can do as extra
