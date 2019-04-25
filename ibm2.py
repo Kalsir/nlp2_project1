@@ -96,14 +96,15 @@ class IBM2(IBM1):
                                 new_value = len_expected_count[len_target][len_source][target_idx][source_idx]/len_expected_total[len_target][len_source][source_idx]
                                 self.alignment_probabilities.write(len_target, len_source, target_idx, source_idx, new_value)
 
+                average_log_likelihood = total_log_likelihood/len(training_corpus)
                 aer = self.calculate_aer(validation_corpus, validation_gold)
                 stats = {
-                    'logp': total_log_likelihood,
+                    'logp': average_log_likelihood,
                     'aer': aer,
                 }
                 print(yaml.dump(stats))
                 w.add_scalars('metrics', stats, i)
-                total_log_likelihoods.append(total_log_likelihood/len(training_corpus))
+                total_log_likelihoods.append(average_log_likelihood)
                 aer_scores.append(aer)
         return (total_log_likelihoods, aer_scores)
 

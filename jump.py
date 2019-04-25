@@ -77,14 +77,15 @@ class IBM2Jump(IBM1):
                 for jump in expected_jump_count.keys():
                     self.jump_counts[jump] = expected_jump_count[jump]
 
+                average_log_likelihood = total_log_likelihood/len(training_corpus)
                 aer = self.calculate_aer(validation_corpus, validation_gold)
                 stats = {
-                    'logp': total_log_likelihood,
+                    'logp': average_log_likelihood,
                     'aer': aer,
                 }
                 print(yaml.dump(stats))
                 w.add_scalars('metrics', stats, i)
-                total_log_likelihoods.append(total_log_likelihood/len(training_corpus))
+                total_log_likelihoods.append(average_log_likelihood)
                 aer_scores.append(aer)
         return (total_log_likelihoods, aer_scores)
 
