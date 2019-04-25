@@ -109,7 +109,7 @@ class IBM1():
         target_sentence, source_sentence = pair
         aligns = map(lambda target_token: self.best_align(source_sentence, target_token), target_sentence)
         # 1-indexed because AER is into that...
-        return set(map(lambda k_v: (k_v[0]+1, k_v[1]+1 if k_v[1] is not None else None), enumerate(aligns)))
+        return set(map(lambda k_v: (k_v[1]+1, k_v[0]+1 if k_v[1] else None), enumerate(aligns)))
 
     def best_align(self, source_sentence: List[str], target_token: str) -> int:
         """Find best alignment for a target token from a source sentence"""
