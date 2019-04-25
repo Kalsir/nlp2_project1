@@ -72,7 +72,7 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
     print('Initial validation AER:', initial_aer)
 
     # Train the model
-    log_likelihoods, aer_scores = ibm_model.train(training_corpus, iterations, test_corpus, test_gold)
+    log_likelihoods, aer_scores = ibm_model.train(training_corpus, iterations, test_corpus, test_gold, name)
     # aer_scores = [initial_aer] + aer_scores
 
     # Print log-likelihood after training

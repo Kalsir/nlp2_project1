@@ -7,6 +7,7 @@ import yaml
 from tensorboardX import SummaryWriter
 from functools import reduce
 import numpy as np
+from pdb import set_trace
 
 class IBM1():
     def __init__(self, vocab_target: Set[str], translation_probabilities: DefaultDict[str, DefaultDict[str, int]] = None, sampling_method = 'uniform'):
@@ -47,7 +48,7 @@ class IBM1():
             sum(map(math.log, target_likelihoods.values()))
         return (log_likelihood, target_likelihoods)
 
-    def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]]) -> Tuple[List[int], List[int]]:
+    def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]], name: str) -> Tuple[List[int], List[int]]:
         """Train model"""
         total_log_likelihoods = []
         aer_scores = []
@@ -93,6 +94,7 @@ class IBM1():
                 w.add_scalars('metrics', stats, i)
                 total_log_likelihoods.append(total_log_likelihood/len(training_corpus))
                 aer_scores.append(aer)
+        self.write_naacl(validation_corpus, validation_gold, name)
         return (total_log_likelihoods, aer_scores)
 
     def print_dictionary(self) -> None:
@@ -129,3 +131,18 @@ class IBM1():
             (sure, probable) = gold
             metric.update(sure=sure, probable=probable, predicted=pred)
         return metric.aer()
+
+    def write_naacl(self, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]], name: str) -> float:
+        """Calculate AER on validation corpus using gold standard"""
+        predictions = map(self.align, validation_corpus)
+        lines = []
+        # set_trace()
+        for sentence_idx, pred in enumerate(predictions):
+            for idx_pair in pred:
+                (source_token_idx, target_token_idx) = idx_pair
+                sentence_id = '%04d' % (sentence_idx + 1)
+                status = 'S'
+                line = ' '.join(map(str, [sentence_id, source_token_idx, target_token_idx or 0, status]))
+                lines.append(line)
+        with open(f'{name}.naacl', 'w') as f:
+            f.write('\n'.join(lines))
