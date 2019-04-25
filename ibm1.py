@@ -9,11 +9,16 @@ from functools import reduce
 import numpy as np
 
 class IBM1():
-    def __init__(self, vocab_target: Set[str], translation_probabilities: DefaultDict[str, DefaultDict[str, int]] = None):
-        self.vocab_target = vocab_target        
+    def __init__(self, vocab_target: Set[str], translation_probabilities: DefaultDict[str, DefaultDict[str, int]] = None, sampling_method = 'uniform'):
+        self.vocab_target = vocab_target
+        n = len(vocab_target)
         if translation_probabilities is None:
-            default_probability = 1/len(vocab_target)
-            self.translation_probabilities = defaultdict(lambda: defaultdict(lambda: default_probability))
+            if sampling_method == 'random':
+                a = np.random.rand(n)
+                self.translation_probabilities = a / np.sum(a)
+            else:
+                default_probability = 1/n
+                self.translation_probabilities = defaultdict(lambda: defaultdict(lambda: default_probability))
         else:
             self.translation_probabilities = translation_probabilities
 
@@ -99,13 +104,13 @@ class IBM1():
     def align(self, pair: Tuple[str, str]) -> Set[Tuple[int, int]]:
         """Find best alignment for a sentence pair"""
         target_sentence, source_sentence = pair
-        aligns = map(lambda target_token: self.best_align(source_sentence, target_token), target_sentence)
+        aligns = map(lambda source_token: self.best_align(target_sentence, source_token), source_sentence)
         # 1-indexed because AER is into that...
         return set(map(lambda k_v: (k_v[0]+1, k_v[1]+1 if k_v[1] else None), enumerate(aligns)))
 
-    def best_align(self, source_sentence: List[str], target_token: str) -> int:
+    def best_align(self, target_sentence: List[str], source_token: str) -> int:
         """Find best alignment for a target token from a source sentence"""
-        probs = map(lambda source_token: self.translation_probabilities[target_token][source_token], source_sentence)
+        probs = map(lambda target_token: self.translation_probabilities[source_token][target_token], target_sentence)
         # np.argmax errors on empty list
         return np.argmax(probs) if probs else None
 

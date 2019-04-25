@@ -18,16 +18,17 @@ def get_flags():
     parser.add_argument('--lines', type = int, default = None, help='number of lines of training data to use, default all')
     parser.add_argument('--iterations', type = int, default = 15, help='number of iterations, default 15')
     parser.add_argument('--probabilities', type = str, default = None, help='file to load previously trained probabilities from (default none)')
+    parser.add_argument('--sampling_method', type = str, default = 'uniform', help='sampling method for initial probabilities: uniform (default), random')
     flags, unparsed = parser.parse_known_args()
     return flags
 
-def get_model(model: str, vocab_target: Set[str], probabilities: DefaultDict[str, DefaultDict[str, int]]):
+def get_model(model: str, vocab_target: Set[str], probabilities: DefaultDict[str, DefaultDict[str, int]], sampling_method: str = 'uniform'):
     if model == 'ibm2':
         ibm_model = IBM2(vocab_target, probabilities)
     elif model == 'jump':
         ibm_model = IBM2Jump(vocab_target, probabilities)
     else:
-        ibm_model = IBM1(vocab_target, probabilities)
+        ibm_model = IBM1(vocab_target, probabilities, sampling_method)
     return ibm_model
 
 def read_tokens(path: str, n:int=None) -> List[List[str]]:
@@ -63,8 +64,9 @@ def read_data(n:int=None):
 
     return (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target)
 
-def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations) -> None:
-    name = ibm_model.__class__.__name__
+def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations, name = None) -> None:
+    if not name:
+        name = ibm_model.__class__.__name__        
     # Print initial validation AER
     initial_aer = ibm_model.calculate_aer(validation_corpus, validation_gold)
     print('Initial validation AER:', initial_aer)
@@ -112,8 +114,9 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
 
 def main():
     flags = get_flags()
-    flag_keys = ['model', 'lines', 'iterations', 'probabilities']
-    (model, lines, iterations, probabilities) = itemgetter(*flag_keys)(vars(flags))
+    flag_keys = ['model', 'lines', 'iterations', 'probabilities', 'sampling_method']
+    (model, lines, iterations, probabilities, sampling_method) = itemgetter(*flag_keys)(vars(flags))
+    name = f'{model}-{sampling_method}'
 
     (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target) = read_data(lines)
 
@@ -124,10 +127,10 @@ def main():
     else:
         translation_probabilities = defaultdict(lambda: defaultdict(lambda: 1/len(vocab_target)))
 
-    ibm_model = get_model(model, vocab_target, translation_probabilities)
-    with open(f'{model}.pkl', 'wb') as f:
+    ibm_model = get_model(model, vocab_target, translation_probabilities, sampling_method)
+    with open(f'{name}.pkl', 'wb') as f:
         pickle.dump(ibm_model.translation_probabilities, f)
-    test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations)
+    test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations, name)
 
 if __name__ == '__main__':
     main()
