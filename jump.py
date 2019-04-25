@@ -34,16 +34,16 @@ class IBM2Jump(IBM1):
         total_log_likelihoods = []
         aer_scores = []
         with SummaryWriter(self.__class__.__name__) as w:
-            for i in trange(iterations):
+            for i in trange(iterations, desc='iteration', position=0):
                 expected_count = defaultdict(lambda: defaultdict(lambda: 0)) # Expected number of times target_token is connected to source_token 
                 expected_total = defaultdict(lambda: 0) # Expected total connections for source_token
                 expected_jump_count = defaultdict(lambda: 0) # Expected connections with a certain jump length
                 total_log_likelihood = 0
 
                 # Calculate expected counts (Expectation step) and log-likelihood
-                for t in range(len(training_corpus)):
+                for pair in tqdm(training_corpus, desc='training_corpus', position=1):
                     # Expand sentence pair
-                    target_sentence, foreign_sentence = training_corpus[t]
+                    target_sentence, foreign_sentence = pair
 
                     # Add null token
                     foreign_sentence = [None] + foreign_sentence

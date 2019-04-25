@@ -16,8 +16,8 @@ def get_flags():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type = str, default = 'ibm2', help='model, ibm1 (default), ibm2, jump')
     parser.add_argument('--lines', type = int, default = None, help='number of lines of training data to use, default all')
-    parser.add_argument('--iterations', type = int, default = 10, help='number of iterations, default 15')
-    parser.add_argument('--probabilities', type = str, default = None, help='file to load previously trained probabilities from (default none)')
+    parser.add_argument('--iterations', type = int, default = 5, help='number of iterations, default 15')
+    parser.add_argument('--probabilities', type = str, default = "ibm1-uniform.pkl", help='file to load previously trained probabilities from (default none)')
     parser.add_argument('--sampling_method', type = str, default = 'uniform', help='sampling method for initial probabilities: uniform (default), random')
     flags, unparsed = parser.parse_known_args()
     return flags
@@ -88,7 +88,7 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
         'aer': aer_scores,
     }
     labels = {
-        'logp': 'Log-likelihood',
+        'logp': 'Average log-likelihood',
         'aer': 'AER Score',
     }
     # Plot log-likelihood and aer curves
@@ -128,9 +128,10 @@ def main():
         translation_probabilities = defaultdict(lambda: defaultdict(lambda: 1/len(vocab_target)))
 
     ibm_model = get_model(model, vocab_target, translation_probabilities, sampling_method)
+
+    test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations, name)
     with open(f'{name}.pkl', 'wb') as f:
         pickle.dump(ibm_model.translation_probabilities, f)
-    test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations, name)
 
 if __name__ == '__main__':
     main()
