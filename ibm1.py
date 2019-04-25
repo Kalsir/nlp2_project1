@@ -87,14 +87,15 @@ class IBM1():
                     for source_token in expected_count[target_token].keys():
                         self.translation_probabilities[target_token][source_token] = expected_count[target_token][source_token]/expected_total[source_token]
 
+                average_log_likelihood = total_log_likelihood/len(training_corpus)
                 aer = self.calculate_aer(validation_corpus, validation_gold)
                 stats = {
-                    'logp': total_log_likelihood,
+                    'logp': average_log_likelihood,
                     'aer': aer,
                 }
                 print(yaml.dump(stats))
                 w.add_scalars('metrics', stats, i)
-                total_log_likelihoods.append(total_log_likelihood/len(training_corpus))
+                total_log_likelihoods.append(average_log_likelihood)
                 aer_scores.append(aer)
         self.write_naacl(validation_corpus, validation_gold, name)
         return (total_log_likelihoods, aer_scores)
