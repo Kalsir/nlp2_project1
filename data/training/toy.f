@@ -1,4 +1,4 @@
-le chat rouge
-le perroquet vieux
+la chat rouge
+la perroquet vieux
 le perroquet rouge
 le chat vieux
