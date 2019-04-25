@@ -48,8 +48,10 @@ class IBM1():
             sum(map(math.log, target_likelihoods.values()))
         return (log_likelihood, target_likelihoods)
 
-    def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]], name: str) -> Tuple[List[int], List[int]]:
+    def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]], name: str = None) -> Tuple[List[int], List[int]]:
         """Train model"""
+        if not name:
+            name = self.__class__.__name__        
         total_log_likelihoods = []
         aer_scores = []
 

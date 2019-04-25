@@ -56,11 +56,11 @@ http://127.0.0.1:6006/
     - [ ] test AER score when comparing best models
 
 ### Submission
-You should submit a tgz file containing a folder (folder namelastname1.lastname2) withthe following content:
+You should submit a tgz file containing a folder (folder namelastname1.lastname2) with the following content:
 - [ ] Test predictions (in naacl format) using your best run for each of the following models
     - [ ] IBM1 MLE (filename:ibm1.mle.naacl)
     - [ ] IBM2 MLE (filename:ibm2.mle.naacl)
-    - [ ] output alignments to naacl file
+    - [x] output alignments to naacl file
 - [ ] Report as a single pdf file (filename:report.pdf)
 - [ ] Your report may contain a link to an open-source repository (such as github), but please do not attach code or additional data to your tgz submission.
 - [ ] You can complete your project submission on Canvas.
