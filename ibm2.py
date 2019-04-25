@@ -40,7 +40,7 @@ class IBM2(IBM1):
             log_likelihood += math.log(target_likelihoods[target_token])
         return (log_likelihood, target_likelihoods)
 
-    def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[int, int]]]) -> Tuple[List[int], List[int]]:
+    def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]], test_corpus: List[Tuple[str, str]], test_gold: List[List[Tuple[Set[int], Set[int]]]], name: str = None) -> Tuple[List[int], List[int]]:
         """Train model"""
         total_log_likelihoods = []
         aer_scores = []
@@ -97,15 +97,19 @@ class IBM2(IBM1):
                                 self.alignment_probabilities.write(len_target, len_source, target_idx, source_idx, new_value)
 
                 average_log_likelihood = total_log_likelihood/len(training_corpus)
-                aer = self.calculate_aer(validation_corpus, validation_gold)
+                val_aer = self.calculate_aer(validation_corpus, validation_gold)
+                test_aer = self.calculate_aer(test_corpus, test_gold)
+
                 stats = {
                     'logp': average_log_likelihood,
-                    'aer': aer,
+                    'val_aer': val_aer,
+                    'test_aer': test_aer,
                 }
                 print(yaml.dump(stats))
                 w.add_scalars('metrics', stats, i)
                 total_log_likelihoods.append(average_log_likelihood)
                 aer_scores.append(aer)
+        self.write_naacl(test_corpus, test_gold, name)
         return (total_log_likelihoods, aer_scores)
 
 
