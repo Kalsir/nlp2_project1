@@ -7,8 +7,8 @@ import yaml
 from tensorboardX import SummaryWriter
 
 class IBM2Jump(IBM1):
-    def __init__(self, english_vocab, translation_probabilities = None, sampling_method = 'uniform'):
-        super(IBM2Jump, self).__init__(english_vocab, translation_probabilities, sampling_method)
+    def __init__(self, english_vocab, translation_probabilities = None):
+        super(IBM2Jump, self).__init__(english_vocab, translation_probabilities)
         self.jump_counts = defaultdict(lambda: 1)
 
     def log_likelihood(self, target_sentence: List[str], foreign_sentence: List[str]) -> Tuple[float, List[float]]:

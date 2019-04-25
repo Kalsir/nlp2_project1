@@ -23,9 +23,9 @@ http://127.0.0.1:6006/
     - [ ] 4. Experiment with two criteria for model selection (i.e. deciding on number of training iterations):
         - [ ] 1) convergence in terms of training log likelihood;
         - [ ] 2) best AER on validation data;
-    - [x] 5. For the selected models, obtain Viterbi alignments for every sentence pair in a test corpus and compute AER using a gold-standard provided by the assistant;
-        - [x] IBM1: AER 0.3378 over 10 iterations
-        - [x] IBM2: AER .2428 over 10 iterations (lexical component), then 5 additional iterations (lexical and jump components)
+    - [ ] 5. For the selected models, obtain Viterbi alignments for every sentence pair in a test corpus and compute AER using a gold-standard provided by the assistant;
+        - [ ] IBM1: AER 0.3378 over 10 iterations
+        - [ ] IBM2: AER .2428 over 10 iterations (lexical component), then 5 additional iterations (lexical and jump components)
 
 ### IBM model 2
 - [ ] Implement IBM model 2 using a jump distribution as in Vogel et al. (1996);
@@ -37,7 +37,7 @@ http://127.0.0.1:6006/
     - [ ] 3. Plot training log-likelihood as a function of the iteration for all these cases
     - [ ] 4. Plot validation AER as a function of the iteration for all these cases
     - [ ] 5. Select two models:
-        - [ ] 1) one in terms of training log likelihood,
+        - [ ] 1) one in terms oftraining log likelihood,
         - [ ] 2) another in terms of validation AER;
     - [ ] 6. Compare the selected models to IBM model 1 in terms of AER in the test set.
 - [ ] Experiment with maximum likelihood estimation;
