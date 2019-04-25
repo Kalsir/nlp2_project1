@@ -108,7 +108,7 @@ class IBM2(IBM1):
                 print(yaml.dump(stats))
                 w.add_scalars('metrics', stats, i)
                 total_log_likelihoods.append(average_log_likelihood)
-                aer_scores.append(aer)
+                aer_scores.append(val_aer)
         self.write_naacl(test_corpus, test_gold, name)
         return (total_log_likelihoods, aer_scores)
 
