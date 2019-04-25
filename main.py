@@ -43,7 +43,7 @@ def sentence_vocab(tokenized: List[List[str]]) -> Set[str]:
 def read_data(n:int=None):
     # Read in training data
     tokenized_target = read_tokens('data/training/hansards.36.2.f', n)
-    tokenized_source = read_tokens('data/training/hansards.36.2.s', n)
+    tokenized_source = read_tokens('data/training/hansards.36.2.e', n)
     training_corpus = list(zip(tokenized_target, tokenized_source))
     vocab_target = sentence_vocab(tokenized_target)
     print(f'vocabulary size english: {len(vocab_target)}')
@@ -51,14 +51,14 @@ def read_data(n:int=None):
     # Read in validation data
     validation_corpus = list(zip(
         read_tokens('data/validation/dev.f'),
-        read_tokens('data/validation/dev.s'),
+        read_tokens('data/validation/dev.e'),
     ))
     validation_gold = aer.read_naacl_alignments('data/validation/dev.wa.nonullalign')
 
     # Read in test data
     test_corpus = list(zip(
         read_tokens('data/testing/test/test.f'),
-        read_tokens('data/testing/test/test.s'),
+        read_tokens('data/testing/test/test.e'),
     ))
     test_gold = aer.read_naacl_alignments('data/testing/answers/test.wa.nonullalign')
 
