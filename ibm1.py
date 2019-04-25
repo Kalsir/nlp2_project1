@@ -90,7 +90,7 @@ class IBM1():
 
 				average_log_likelihood = total_log_likelihood/len(training_corpus)
 				val_aer = self.calculate_aer(validation_corpus, validation_gold)
-				test_aer = 1#self.calculate_aer(test_corpus, test_gold)
+				test_aer = self.calculate_aer(test_corpus, test_gold)
 
 				stats = {
 					'logp': average_log_likelihood,

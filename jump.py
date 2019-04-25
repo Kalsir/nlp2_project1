@@ -115,6 +115,6 @@ class IBM2Jump(IBM1):
                 if prob > best_prob:  # prefer newer word in case of tie
                     best_align = source_idx + 1 
                     best_prob = prob
-            alignment.add((target_idx+1, best_align))
+            alignment.add((best_align, target_idx+1))
 
         return alignment
