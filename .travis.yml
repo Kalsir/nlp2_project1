@@ -1,0 +1,3 @@
+script:
+- docker build -t ibm .
+- docker run --rm -ti -v $PWD:/app ibm pytest
