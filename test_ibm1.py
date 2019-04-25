@@ -23,7 +23,7 @@ def test_log_likelihood():
 
 def test_train():
     model = get_model()
-    assert model.train([(['a'],['1'])], 1, [(['a'],['5'])], [({1},{1})]) == ([-0.6931471805599453], [1.0])
+    assert model.train([(['a'],['1'])], 1, [(['a'],['5'])], [({1},{1})], [(['a'],['5'])], [({1},{1})], 'test') == ([-0.6931471805599453], [1.0])
 
 def test_print_dictionary():
     model = get_model()
@@ -31,7 +31,7 @@ def test_print_dictionary():
 
 def test_align():
     model = get_model()
-    assert model.align(('a','5')) == {(1,None)}
+    assert model.align(('a','5')) == {(1,1)}
 
 def test_calculate_aer():
     model = get_model()
