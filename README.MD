@@ -17,7 +17,7 @@ http://127.0.0.1:6006/
 - [ ] Implement IBM model 1
     - 1.
         - [x] a) Implement EM training (Brown et al., 1993) for IBM model 1;
-        - [ ] b) All of the tasks below should be performed for both models.
+        - [x] b) All of the tasks below should be performed for both models.
     - [x] 2. Plot the evolution of training log likelihood as a function of the iteration.
     - [x] 3. Plot the evolution of alignment error rate (AER) on validation data as a function of the iteration;
     - [ ] 4. Experiment with two criteria for model selection (i.e. deciding on number of training iterations):
@@ -29,8 +29,8 @@ http://127.0.0.1:6006/
 
 ### IBM model 2
 - [ ] Implement IBM model 2 using a jump distribution as in Vogel et al. (1996);
-    - [ ] 1. Extend your previous model by implementing a full IBM model 2 (Brown et al.,1993), however using the cheaper parameterisation in terms of jumps;
-    - [ ] 2. IBM 2 is non-convex, thus you will see that optimising the log-likelihood function is not as trivial as in the case of IBM model 1, particularly, convergence will depend onhow you initialise the model parameters, you will try
+    - [x] 1. Extend your previous model by implementing a full IBM model 2 (Brown et al.,1993), however using the cheaper parameterisation in terms of jumps;
+    - [x] 2. IBM 2 is non-convex, thus you will see that optimising the log-likelihood function is not as trivial as in the case of IBM model 1, particularly, convergence will depend on how you initialise the model parameters, you will try
         - [x] uniform initialisation
         - [x] random initialisation (try 3 different starting points)
         - [ ] initialise the lexical parameters using the output of a complete run of model 1
