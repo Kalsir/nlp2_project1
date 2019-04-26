@@ -146,7 +146,7 @@ def main():
                     if t not in translation_probabilities.keys():
                         translation_probabilities[t] = dict()
                     for s in source:
-                        translation_probabilities[t][s] = np.random.rand()
+                        translation_probabilities[t][s] = np.random.rand()*2/len(vocab_target)
             for pair in validation_corpus:
                 target, source = pair
                 source = [None] + source
@@ -154,7 +154,7 @@ def main():
                     if t not in translation_probabilities.keys():
                         translation_probabilities[t] = dict()
                     for s in source:
-                        translation_probabilities[t][s] = np.random.rand()
+                        translation_probabilities[t][s] = np.random.rand()*2/len(vocab_target)
             for pair in test_corpus:
                 target, source = pair
                 source = [None] + source
@@ -162,7 +162,7 @@ def main():
                     if t not in translation_probabilities.keys():
                         translation_probabilities[t] = dict()
                     for s in source:
-                        translation_probabilities[t][s] = np.random.rand()
+                        translation_probabilities[t][s] = np.random.rand()*2/len(vocab_target)
         else:
             translation_probabilities = None
 
