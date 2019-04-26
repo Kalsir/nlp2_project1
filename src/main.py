@@ -135,7 +135,7 @@ def main():
         with open(probabilities, 'rb') as f:
             translation_probabilities = pickle.load(f)
     else:
-        translation_probabilities = defaultdict(lambda: defaultdict(lambda: 1/len(vocab_target)))
+        translation_probabilities = None
 
     ibm_model = get_model(model, vocab_target, translation_probabilities, sampling_method, seed)
 
