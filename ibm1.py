@@ -10,12 +10,12 @@ import numpy as np
 from pdb import set_trace
 
 class IBM1():
-	def __init__(self, vocab_target: Set[str], translation_probabilities: DefaultDict[str, DefaultDict[str, int]] = None, sampling_method = 'uniform'):
+	def __init__(self, vocab_target: Set[str], translation_probabilities: DefaultDict[str, DefaultDict[str, int]] = None, sampling_method = 'uniform', seed=42):
 		self.vocab_target = vocab_target
 		n = len(vocab_target)
 		if translation_probabilities is None:
 			if sampling_method == 'random':
-				np.random.seed(42)
+				np.random.seed(seed)
 				a = np.random.rand(n)
 				self.translation_probabilities = a / np.sum(a)
 			else:
