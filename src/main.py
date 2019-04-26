@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 import argparse
 import itertools
@@ -45,25 +46,25 @@ def sentence_vocab(tokenized: List[List[str]]) -> Set[str]:
 
 def read_data(n:int=None, lower=False):
     # Read in training data
-    tokenized_target = read_tokens('data/training/hansards.36.2.f', lower, n)
-    tokenized_source = read_tokens('data/training/hansards.36.2.e', lower, n)
+    tokenized_target = read_tokens('../data/training/hansards.36.2.f', lower, n)
+    tokenized_source = read_tokens('../data/training/hansards.36.2.e', lower, n)
     training_corpus = list(zip(tokenized_target, tokenized_source))
     vocab_target = sentence_vocab(tokenized_target)
     print(f'vocabulary size english: {len(vocab_target)}')
 
     # Read in validation data
     validation_corpus = list(zip(
-        read_tokens('data/validation/dev.f', lower),
-        read_tokens('data/validation/dev.e', lower),
+        read_tokens('../data/validation/dev.f', lower),
+        read_tokens('../data/validation/dev.e', lower),
     ))
-    validation_gold = aer.read_naacl_alignments('data/validation/dev.wa.nonullalign')
+    validation_gold = aer.read_naacl_alignments('../data/validation/dev.wa.nonullalign')
 
     # Read in test data
     test_corpus = list(zip(
-        read_tokens('data/testing/test/test.f', lower),
-        read_tokens('data/testing/test/test.e', lower),
+        read_tokens('../data/testing/test/test.f', lower),
+        read_tokens('../data/testing/test/test.e', lower),
     ))
-    test_gold = aer.read_naacl_alignments('data/testing/answers/test.wa.nonullalign')
+    test_gold = aer.read_naacl_alignments('../data/testing/answers/test.wa.nonullalign')
 
     return (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target)
 
@@ -98,7 +99,7 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
     for i, (k, ys) in enumerate(stats.items()):
         # TODO: seaborn?
         label = labels[k]
-        png_file = f'{k}_{name}.png'
+        png_file = os.path.join('..', 'Results', 'plots', f'{k}_{name}.png')
         fig = plt.figure()
         plt.plot(xs, ys)
         plt.xlabel('Iterations')
@@ -107,10 +108,10 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
         plt.close(fig)
 
     # TODO: df.to_csv?
-    log_file = f'run_log_{name}.txt'
-    f = open(log_file,'w+')
-    for i in tqdm(range(iterations), desc='writing'):
-        f.write('Iteration: ' + str(i+1) + ' Log-likelihood: ' + str(log_likelihoods[i]) + ' AER score: ' + str(aer_scores[i]) + '\n')
+    log_file = os.path.join('..', 'Results', 'logs', f'run_log_{name}.txt')
+    with open(log_file,'w+') as f:
+        for i in tqdm(range(iterations), desc='writing'):
+            f.write('Iteration: ' + str(i+1) + ' Log-likelihood: ' + str(log_likelihoods[i]) + ' AER score: ' + str(aer_scores[i]) + '\n')
 
     # # Print dictionary
     # ibm_model.print_dictionary()
@@ -139,7 +140,8 @@ def main():
     ibm_model = get_model(model, vocab_target, translation_probabilities, sampling_method, seed)
 
     test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations, name)
-    with open(f'{name}.pkl', 'wb') as f:
+    pkl_file = os.path.join('..', 'Results', 'pickles', f'{name}.pkl')
+    with open(pkl_file, 'wb') as f:
         pickle.dump(ibm_model.translation_probabilities, f)
 
 if __name__ == '__main__':
