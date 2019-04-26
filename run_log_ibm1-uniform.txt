@@ -1,0 +1,5 @@
+Iteration: 1 Log-likelihood: -104.55891679215051 AER score: 0.3932481751824818
+Iteration: 2 Log-likelihood: -92.27250374007146 AER score: 0.36222627737226276
+Iteration: 3 Log-likelihood: -88.47825523423343 AER score: 0.3594890510948905
+Iteration: 4 Log-likelihood: -87.15731787520805 AER score: 0.3604014598540146
+Iteration: 5 Log-likelihood: -86.56720437364977 AER score: 0.36222627737226276

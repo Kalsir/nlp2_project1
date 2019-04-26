@@ -91,7 +91,7 @@ def test_model(ibm_model, training_corpus, validation_corpus, test_corpus, valid
         'aer': aer_scores,
     }
     labels = {
-        'logp': 'Log-likelihood',
+        'logp': 'Average log-likelihood',
         'aer': 'AER Score',
     }
     # Plot log-likelihood and aer curves
@@ -137,9 +137,10 @@ def main():
         translation_probabilities = defaultdict(lambda: defaultdict(lambda: 1/len(vocab_target)))
 
     ibm_model = get_model(model, vocab_target, translation_probabilities, sampling_method, seed)
+
+    test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations, name)
     with open(f'{name}.pkl', 'wb') as f:
         pickle.dump(ibm_model.translation_probabilities, f)
-    test_model(ibm_model, training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, iterations, name)
 
 if __name__ == '__main__':
     main()

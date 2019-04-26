@@ -1,4 +1,4 @@
-the red cat
-the old parrot
+tho red cat
+tho old parrot
 the red parrot
 the old cat

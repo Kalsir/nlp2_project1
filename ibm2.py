@@ -30,12 +30,9 @@ class IBM2(IBM1):
         log_likelihood = 0
         target_likelihoods = defaultdict(lambda: 0)
         for target_idx, target_token in enumerate(target_sentence):       
-            # normalizer = 0
-            # for source_idx, source_token in enumerate(foreign_sentence):
-            #     normalizer += self.alignment_probabilities.read(len_target, len_source, target_idx, source_idx)
             for source_idx, source_token in enumerate(foreign_sentence):
                 translation_probability = self.translation_probabilities[target_token][source_token]
-                alignment_probabilility = self.alignment_probabilities.read(len_target, len_source, target_idx, source_idx)#/normalizer
+                alignment_probabilility = self.alignment_probabilities.read(len_target, len_source, target_idx, source_idx)
                 target_likelihoods[target_token] += translation_probability*alignment_probabilility
             log_likelihood += math.log(target_likelihoods[target_token])
         return (log_likelihood, target_likelihoods)
@@ -53,9 +50,9 @@ class IBM2(IBM1):
                 total_log_likelihood = 0
 
                 # Calculate expected counts (Expectation step) and log-likelihood
-                for t in range(len(training_corpus)):
+                for pair in tqdm(training_corpus, desc='training_corpus', position=1):
                     # Expand sentence pair
-                    target_sentence, foreign_sentence = training_corpus[t]
+                    target_sentence, foreign_sentence = pair
 
                     # Add null token
                     foreign_sentence = [None] + foreign_sentence
@@ -78,10 +75,6 @@ class IBM2(IBM1):
                             expected_total[source_token] += normalized_count
                             len_expected_count[len_target][len_source][target_idx][source_idx] += normalized_count
                             len_expected_total[len_target][len_source][source_idx] += normalized_count
-
-                    # Print progress through training data
-                    if (t+1)%10000 == 0:
-                        print((t+1), 'out of', len(training_corpus), 'done')
 
                 # Update translation probabilities (Maximization step)
                 for target_token in expected_count.keys():
@@ -135,6 +128,6 @@ class IBM2(IBM1):
                 if prob > best_prob:  # prefer newer word in case of tie
                     best_align = source_idx + 1 
                     best_prob = prob
-            alignment.add((target_idx+1, best_align))
+            alignment.add((best_align, target_idx+1))
 
         return alignment
