@@ -48,7 +48,7 @@ http://127.0.0.1:6006/
 ### Report
 - [ ] Write a technical report where you present the models and an empirical comparison. Your report should also present learning curves where applicable along with a discussion explaining aspects such as non-convexity, stability and convergence.
     - [x] We expect short reports (5 pages plus references) written in English.
-    - [ ] The typical submission is organised as follows:
+    - [x] The typical submission is organised as follows:
         - [x] abstract: conveys scope and contributions;
         - [x] introduction: present the problem and relevant background;
         - [x] model: technical description of models;
