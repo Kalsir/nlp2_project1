@@ -38,7 +38,7 @@ def read_tokens(path: str, lower=False, n:int=None) -> List[List[str]]:
     sentences = open(path, 'r', encoding='utf8').readlines()
     sentences_ = itertools.islice(sentences, n)
     # we split on spaces as the hansards dataset uses explicit spacing between tokens
-    return [[token.lower() if lower else token for token in sentence[:-1].split(' ')] for sentence in sentences_]
+    return [[token.lower() if lower else token for token in sentence.split(' ')[:-1]] for sentence in sentences_]
 
 def sentence_vocab(tokenized: List[List[str]]) -> Set[str]:
     return set([token for tokens in tokenized for token in tokens])
