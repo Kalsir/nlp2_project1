@@ -1,0 +1,1 @@
+Iteration: 1 Log-likelihood: -95.59883753710756 AER score: 0.6647780925401322
