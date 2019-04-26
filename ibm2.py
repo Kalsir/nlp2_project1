@@ -19,7 +19,7 @@ class AlignmentProbabilities():
         self.alignment_probabilities[len_target][len_source][target_idx][source_idx] = value
 
 class IBM2(IBM1):
-    def __init__(self, vocab_target: Set[str], translation_probabilities: DefaultDict[str, DefaultDict[str, int]] = None, sampling_method = 'uniform'):
+    def __init__(self, vocab_target: Set[str], translation_probabilities: DefaultDict[str, DefaultDict[str, int]] = None, sampling_method = 'uniform', seed=42):
         super(IBM2, self).__init__(vocab_target, translation_probabilities, sampling_method)
         self.alignment_probabilities = AlignmentProbabilities()
 

@@ -7,7 +7,7 @@ import yaml
 from tensorboardX import SummaryWriter
 
 class IBM2Jump(IBM1):
-    def __init__(self, english_vocab, translation_probabilities = None, sampling_method = 'uniform'):
+    def __init__(self, english_vocab, translation_probabilities = None, sampling_method = 'uniform', seed=42):
         super(IBM2Jump, self).__init__(english_vocab, translation_probabilities, sampling_method)
         self.jump_counts = defaultdict(lambda: 1)
 
