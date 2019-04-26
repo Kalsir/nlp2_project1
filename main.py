@@ -34,34 +34,34 @@ def get_model(model: str, vocab_target: Set[str], probabilities: DefaultDict[str
         ibm_model = IBM1(*args)
     return ibm_model
 
-def read_tokens(path: str, n:int=None) -> List[List[str]]:
+def read_tokens(path: str, lower=False, n:int=None) -> List[List[str]]:
     sentences = open(path, 'r', encoding='utf8').readlines()
     sentences_ = itertools.islice(sentences, n)
     # we split on spaces as the hansards dataset uses explicit spacing between tokens
-    return [sentence[:-1].split(' ') for sentence in sentences_]
+    return [[token.lower() if lower else token for token in sentence[:-1].split(' ')] for sentence in sentences_]
 
 def sentence_vocab(tokenized: List[List[str]]) -> Set[str]:
     return set([token for tokens in tokenized for token in tokens])
 
-def read_data(n:int=None):
+def read_data(n:int=None, lower=False):
     # Read in training data
-    tokenized_target = read_tokens('data/training/hansards.36.2.f', n)
-    tokenized_source = read_tokens('data/training/hansards.36.2.e', n)
+    tokenized_target = read_tokens('data/training/hansards.36.2.f', lower, n)
+    tokenized_source = read_tokens('data/training/hansards.36.2.e', lower, n)
     training_corpus = list(zip(tokenized_target, tokenized_source))
     vocab_target = sentence_vocab(tokenized_target)
     print(f'vocabulary size english: {len(vocab_target)}')
 
     # Read in validation data
     validation_corpus = list(zip(
-        read_tokens('data/validation/dev.f'),
-        read_tokens('data/validation/dev.e'),
+        read_tokens('data/validation/dev.f', lower),
+        read_tokens('data/validation/dev.e', lower),
     ))
     validation_gold = aer.read_naacl_alignments('data/validation/dev.wa.nonullalign')
 
     # Read in test data
     test_corpus = list(zip(
-        read_tokens('data/testing/test/test.f'),
-        read_tokens('data/testing/test/test.e'),
+        read_tokens('data/testing/test/test.f', lower),
+        read_tokens('data/testing/test/test.e', lower),
     ))
     test_gold = aer.read_naacl_alignments('data/testing/answers/test.wa.nonullalign')
 
@@ -127,7 +127,7 @@ def main():
     if probabilities:
         name += f'-{probabilities}'
 
-    (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target) = read_data(lines)
+    (training_corpus, validation_corpus, test_corpus, validation_gold, test_gold, vocab_target) = read_data(lines, lower)
 
     # optionally load in previously trained probabilities
     if probabilities:
