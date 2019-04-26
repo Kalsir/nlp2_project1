@@ -12,6 +12,7 @@ from ibm1 import IBM1
 from ibm2 import IBM2
 from jump import IBM2Jump
 import dill as pickle
+import numpy as np
 
 def get_flags():
     parser = argparse.ArgumentParser()
@@ -135,7 +136,35 @@ def main():
         with open(probabilities, 'rb') as f:
             translation_probabilities = pickle.load(f)
     else:
-        translation_probabilities = None
+        if sampling_method == 'random':
+            np.random.seed(seed)
+            translation_probabilities = dict()
+            for pair in training_corpus:
+                target, source = pair
+                source = [None] + source
+                for t in target:
+                    if t not in translation_probabilities.keys():
+                        translation_probabilities[t] = dict()
+                    for s in source:
+                        translation_probabilities[t][s] = np.random.rand()
+            for pair in validation_corpus:
+                target, source = pair
+                source = [None] + source
+                for t in target:
+                    if t not in translation_probabilities.keys():
+                        translation_probabilities[t] = dict()
+                    for s in source:
+                        translation_probabilities[t][s] = np.random.rand()
+            for pair in test_corpus:
+                target, source = pair
+                source = [None] + source
+                for t in target:
+                    if t not in translation_probabilities.keys():
+                        translation_probabilities[t] = dict()
+                    for s in source:
+                        translation_probabilities[t][s] = np.random.rand()
+        else:
+            translation_probabilities = None
 
     ibm_model = get_model(model, vocab_target, translation_probabilities, sampling_method, seed)
 
