@@ -1,0 +1,15 @@
+Iteration: 1 Log-likelihood: -104.513085483536 AER score: 0.3978102189781022
+Iteration: 2 Log-likelihood: -84.73167778731313 AER score: 0.29014598540145986
+Iteration: 3 Log-likelihood: -72.07484726804402 AER score: 0.26003649635036497
+Iteration: 4 Log-likelihood: -65.21803711332632 AER score: 0.25912408759124084
+Iteration: 5 Log-likelihood: -62.647078212406605 AER score: 0.2618613138686131
+Iteration: 6 Log-likelihood: -61.68373597004006 AER score: 0.27007299270072993
+Iteration: 7 Log-likelihood: -61.25404516600434 AER score: 0.2846715328467153
+Iteration: 8 Log-likelihood: -61.02907710544782 AER score: 0.2883211678832117
+Iteration: 9 Log-likelihood: -60.904131517132335 AER score: 0.2837591240875912
+Iteration: 10 Log-likelihood: -60.830187388716475 AER score: 0.281021897810219
+Iteration: 11 Log-likelihood: -60.7852653051116 AER score: 0.281021897810219
+Iteration: 12 Log-likelihood: -60.75822673018541 AER score: 0.281021897810219
+Iteration: 13 Log-likelihood: -60.74256175659055 AER score: 0.27919708029197077
+Iteration: 14 Log-likelihood: -60.73433134290878 AER score: 0.28284671532846717
+Iteration: 15 Log-likelihood: -60.73111071943099 AER score: 0.28558394160583944
