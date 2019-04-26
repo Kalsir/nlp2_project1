@@ -3,8 +3,11 @@
 ## Usage
 
 ```bash
+# local
 pip install -r requirements.txt
+cd src/
 python main.m
+# docker
 docker build -t ibm .
 docker run --rm -ti -v $PWD:/app ibm python main.py --model ibm2
 docker run -ti -u (id -u):(id -g) -p 6006:6006 -v $PWD:/logs tensorflow/tensorflow tensorboard --logdir /logs
