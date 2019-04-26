@@ -1,6 +1,7 @@
 from typing import Tuple, List, Set, Dict, Any, DefaultDict
 from collections import defaultdict
 import math
+import os
 from aer import AERSufficientStatistics
 from tqdm import tqdm, trange
 import yaml

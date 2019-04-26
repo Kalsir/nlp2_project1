@@ -1,6 +1,7 @@
 from typing import Tuple, List, Set, Dict, DefaultDict
 from collections import defaultdict
 import math
+import os
 from ibm1 import IBM1
 from tqdm import tqdm, trange
 import yaml
