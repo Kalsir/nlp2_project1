@@ -40,13 +40,14 @@ class IBM1():
 		log_likelihood, _ = self.log_likelihood(target_sentence, source_sentence)
 		return log_likelihood
 
-	def log_likelihood(self, target_sentence: List[str], source_sentence: List[str]) -> int:    
+	def log_likelihood(self, target_sentence: str, source_sentence: str) -> int:
 		"""Calculate target_token-likelihoods and log-likelihood of sentence pair"""
-		target_likelihoods = defaultdict(lambda: 0, {target_token: sum([
-				self.translation_probabilities[target_token][source_token]
-			for source_token in source_sentence]) for target_token in target_sentence})
-		log_likelihood = -math.log(len(source_sentence)**len(target_sentence)) + \
-			sum(map(math.log, target_likelihoods.values()))
+		log_likelihood = -math.log(len(source_sentence)**len(target_sentence))
+		target_likelihoods = defaultdict(lambda: 0)
+		for target_token in target_sentence:
+			for source_token in source_sentence:
+				target_likelihoods[target_token] += self.translation_probabilities[target_token][source_token]
+			log_likelihood += math.log(target_likelihoods[target_token])
 		return (log_likelihood, target_likelihoods)
 
 	def train(self, training_corpus: List[Tuple[str, str]], iterations: int, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]], test_corpus: List[Tuple[str, str]], test_gold: List[List[Tuple[Set[int], Set[int]]]], name: str = None) -> Tuple[List[int], List[int]]:
@@ -112,22 +113,27 @@ class IBM1():
 
 	def align(self, pair: Tuple[str, str]) -> Set[Tuple[int, int]]:
 		"""Find best alignment for a sentence pair"""
+		# Expand sentence pair
 		target_sentence, source_sentence = pair
-		source_sentence = [None] + source_sentence
-		aligns = map(lambda target_token: self.best_align(source_sentence, target_token), target_sentence)
 
-		# 1-indexed because AER is into that...
-		test = set(map(lambda k_v: (k_v[1] if k_v[1] is not None else None, k_v[0]+1), enumerate(aligns))) 
-		return test
+		# Initialize alignment
+		alignment = set()
 
-	def best_align(self, source_sentence: List[str], target_token: str) -> int:
-		"""Find best alignment for a target token from a source sentence"""
-		probs = list(map(lambda source_token: self.translation_probabilities[target_token][source_token], source_sentence))
-		# np.argmax errors on empty list
-		if probs:
-			return np.argmax(probs)
-		else:
-			return None
+		# Add best link for every english word
+		for target_idx, target_token in enumerate(target_sentence):
+			# Default alignment with null token
+			best_align = None
+			best_prob = self.translation_probabilities[target_token][None]     
+
+			# Check alignments with all other possible words
+			for source_idx, source_token in enumerate(source_sentence):
+				prob = self.translation_probabilities[target_token][source_token] 
+				if prob > best_prob: 
+					best_align = source_idx + 1 
+					best_prob = prob
+			alignment.add((best_align, target_idx+1))
+
+		return alignment
 
 	def calculate_aer(self, validation_corpus: List[Tuple[str, str]], validation_gold: List[List[Tuple[Set[int], Set[int]]]]) -> float:
 		"""Calculate AER on validation corpus using gold standard"""
